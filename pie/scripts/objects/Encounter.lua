@@ -7,6 +7,16 @@ function Encounter:init()
     self.turn = 1
 end
 
+function Encounter:onBattleInit()
+    super:onBattleInit(self)
+
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:onBattleInit(battler)
+        end
+    end
+end
+
 function Encounter:onBattleStart()
     super:onBattleStart(self)
 
@@ -33,6 +43,15 @@ function Encounter:onBattleEnd()
     end
 end
 
+function Encounter:onTurnStart()
+    super:onTurnStart(self)
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:onTurnStart(battler)
+        end
+    end
+end
+
 function Encounter:onTurnEnd()
     super:onTurnEnd()
     local party = Game.battle.party
@@ -56,6 +75,46 @@ function Encounter:onTurnEnd()
 
     -- The turn is advancing, so the turn number is increased.
     self.turn = self.turn + 1
+end
+
+function Encounter:onActionsStart()
+    super:onActionsStart(self)
+    
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:onActionsStart(battler)
+        end
+    end
+end
+
+function Encounter:onActionsEnd()
+    super:onActionsEnd(self)
+    
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:onActionsEnd(battler)
+        end
+    end
+end
+
+function Encounter:beforeStateChange(old, new)
+    super:beforeStateChange(self, old, new)
+    
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:beforeStateChange(battler, old, new)
+        end
+    end
+end
+
+function Encounter:onStateChange(old, new)
+    super:onStateChange(self, old, new)
+    
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            item:onStateChange(battler, old, new)
+        end
+    end
 end
 
 return Encounter

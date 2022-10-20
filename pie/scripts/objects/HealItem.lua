@@ -14,6 +14,9 @@ function HealItem:init()
     self.future_heal_turns = 0
 end
 
+function HealItem:getFutureHealAmount(chara) return self.future_heal_amount end
+function HealItem:getFutureHealTurns(chara) return self.future_heal_turns end
+
 function HealItem:onWorldUse(target)
     if self.target == "ally" then
         -- Heal single party member
@@ -40,8 +43,8 @@ function HealItem:onBattleUse(user, target)
         target:heal(amount)
         -- Apply future healing
         if self.future_heal_amount ~= 0 then
-            local amount = self.future_heal_amount + user.chara:getHealBonus()
-            target.chara:futureHeal(amount, self.future_heal_turns)
+            local amount = self:getFutureHealAmount(target.chara) + user.chara:getHealBonus()
+            target.chara:futureHeal(amount, self:getFutureHealTurns(target.chara))
         end
     elseif self.target == "party" then
         -- Heal all party members

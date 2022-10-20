@@ -46,6 +46,31 @@ function Item:init()
     self.passive_item_frequency = 1
 end
 
+function Item:getHealBonus(chara) return self.heal_bonus end
+function Item:getVictoryHealAmount(chara) return self.victory_heal end
+
+function Item:doesPassiveHeal(chara) return self.passive_heal end
+function Item:getPassiveHealAmount(chara) return self.passive_heal_amount end
+function Item:getPassiveHealCost(chara) return self.passive_heal_cost end
+function Item:getPassiveHealFrequency(chara) return self.passive_heal_frequency end
+
+function Item:doesPassiveHurt(chara) return self.passive_hurt end
+function Item:getPassiveHurtAmount(chara) return self.passive_hurt_amount end
+function Item:getPassiveHurtFrequency(chara) return self.passive_hurt_frequency end
+
+function Item:doesPassiveTension(chara) return self.passive_tp end
+function Item:getPassiveTensionAmount(chara) return self.passive_tp_amount end
+function Item:getPassiveTensionCost(chara) return self.passive_tp_cost end
+function Item:getPassiveTensionFrequency(chara) return self.passive_tp_frequency end
+
+function Item:doesPassiveItem(chara) return self.passive_item end
+function Item:getPassiveItemName(chara) return self.passive_item_name end
+function Item:getPassiveItemTensionCost(chara) return self.passive_item_tpcost end
+function Item:getPassiveItemHPCost(chara) return self.passive_item_hpcost end
+function Item:getPassiveItemFrequency(chara) return self.passive_item_frequency end
+
+function Item:onBattleInit(battler) end
+
 ---Code that is run at the start of the battle,
 ---when this item is equipped.
 ---@param battler any The battler that is holding this item.
@@ -57,76 +82,13 @@ function Item:onBattleStart(battler) end
 ---for items with that effect.
 ---@param battler any The battler that is holding this item.
 function Item:onBattleEnd(battler) 
-    if self.victory_heal > 0 then
-        battler:heal(self.victory_heal)
+    local amount = self:getVictoryHealAmount(battler.chara)
+    if amount > 0 then
+        battler:heal(amount)
     end
 end
 
----Controls passive healing behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
-function Item:passiveHeal(battler, turn)
-    -- Standard checks & check to only activate if not at max HP.
-    if self.passive_heal and turn % self.passive_heal_frequency == 0 and battler.chara.health < battler.chara:getStat("health") then
-        -- If the cost (TP) is less than or equal to the current party tension, the battler is healed and tension is removed.
-        if self.passive_heal_cost <= Game.tension then
-            battler:heal(self.passive_heal_amount) 
-            Game:removeTension(self.passive_heal_cost) 
-        end
-    end
-end
-
----Controls passive damage behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
-function Item:passiveHurt(battler, turn)
-    if self.passive_hurt and turn % self.passive_hurt_frequency == 0 then
-        battler:hurt(self.passive_hurt_amount, true)
-    end
-end
-
----Controls passive TP replenishment behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
-function Item:passiveTPRestore(battler, turn)
-    if self.passive_tp and turn % self.passive_tp_frequency == 0 and Game.tension < 100 then
-        -- Since battler:hurt() deals a minimum of 1 damage, the HP cost must be checked to see if it is above 0.
-        if self.passive_tp_cost > 0 then
-            -- If there is enough HP to cover the cost, then TP is given and the battler is hurt.
-            if self.passive_tp_cost < battler.chara.health then
-                Game:giveTension(self.passive_tp_amount)
-                battler:hurt(self.passive_tp_cost, true)
-            end
-        -- If there is no cost, tp is given directly, and battler:hurt() is not called.
-        else
-            Game:giveTension(self.passive_tp_amount)
-        end
-    end
-end
-
----Controls passive item-giving-granting-whatever you like to call it behaviour.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
-function Item:passiveItem(battler, turn)
-    if self.passive_item and turn % self.passive_item_frequency == 0 then
-        -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
-        local can_afford = (self.passive_item_tpcost <= Game.tension and self.passive_item_hpcost < battler.chara.health)
-
-        -- If both checks pass then an attempt to add the item is made.
-        if can_afford then
-            local res_item = Game.inventory:addItemTo("items", self.passive_item_name, false)
-
-            -- If the item is added successfully (there was space in the main inventory) then TP and HP are deducted.
-            if res_item ~= nil then
-                Game:removeTension(self.passive_item_tpcost)
-                -- Once again, only call battler:hurt() if there is a HP cost.
-                if self.passive_item_hpcost > 0 then
-                    battler:hurt(self.passive_item_hpcost, true)
-                end
-            end
-        end
-    end
-end
+function Item:onTurnStart(battler, turn) end
 
 ---Code that is run at the end of every turn,
 ---when this item is equipped.
@@ -138,6 +100,82 @@ function Item:onTurnEnd(battler, turn)
     self:passiveHurt(battler,turn)
     self:passiveTPRestore(battler, turn)
     self:passiveItem(battler, turn)
+end
+
+function Item:onActionsStart(battler) end
+function Item:onActionsEnd(battler) end
+
+function Item:beforeStateChange(battler, old, new) end
+function Item:onStateChange(battler, old, new) end
+
+function Item:onGameOver(battler) end
+
+---Controls passive healing behaviour for this item.
+---@param battler any The battler that is holding this item.
+---@param turn integer Current battle turn.
+function Item:passiveHeal(battler, turn)
+    -- Standard checks & check to only activate if not at max HP.
+    if self:doesPassiveHeal(battler.chara) and turn % self:getPassiveHealFrequency(battler.chara) == 0 and battler.chara.health < battler.chara:getStat("health") then
+        -- If the cost (TP) is less than or equal to the current party tension, the battler is healed and tension is removed.
+        if self:getPassiveHealCost(battler.chara) <= Game.tension then
+            battler:heal(self:getPassiveHealAmount(battler.chara))
+            Game:removeTension(self:getPassiveHealAmount(battler.chara)) 
+        end
+    end
+end
+
+---Controls passive damage behaviour for this item.
+---@param battler any The battler that is holding this item.
+---@param turn integer Current battle turn.
+function Item:passiveHurt(battler, turn)
+    -- Standard checks & check that battler is not downed.
+    if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down then
+        battler:hurt(self:getPassiveHurtAmount(battler.chara), true)
+    end
+end
+
+---Controls passive TP replenishment behaviour for this item.
+---@param battler any The battler that is holding this item.
+---@param turn integer Current battle turn.
+function Item:passiveTPRestore(battler, turn)
+    -- Standard checks and check to only activate if not at max TP.
+    if self:doesPassiveTension(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and Game.tension < 100 then
+        -- Since battler:hurt() deals a minimum of 1 damage, the HP cost must be checked to see if it is above 0.
+        if self:getPassiveTensionCost(battler.chara) > 0 then
+            -- If there is enough HP to cover the cost, then TP is given and the battler is hurt.
+            if self:getPassiveTensionCost(battler.chara) < battler.chara.health then
+                Game:giveTension(self:getPassiveTensionAmount(battler.chara))
+                battler:hurt(self:getPassiveTensionCost(battler.chara), true)
+            end
+        -- If there is no cost, tp is given directly, and battler:hurt() is not called.
+        else
+            Game:giveTension(self:getPassiveTensionAmount(battler.chara))
+        end
+    end
+end
+
+---Controls passive item-giving-granting-whatever you like to call it behaviour.
+---@param battler any The battler that is holding this item.
+---@param turn integer Current battle turn.
+function Item:passiveItem(battler, turn)
+    if self:doesPassiveItem(battler.chara) and turn % self:getPassiveItemFrequency(battler.chara) == 0 then
+        -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
+        local can_afford = (self:getPassiveItemTPCost(battler.chara) <= Game.tension and self:getPassiveItemHPCost(battler.chara) < battler.chara.health)
+
+        -- If both checks pass then an attempt to add the item is made.
+        if can_afford then
+            local res_item = Game.inventory:addItemTo("items", self:getPassiveItemName(battler.chara), false)
+
+            -- If the item is added successfully (there was space in the main inventory) then TP and HP are deducted.
+            if res_item ~= nil then
+                Game:removeTension(self:getPassiveItemTensionCost(battler.chara))
+                -- Once again, only call battler:hurt() if there is a HP cost.
+                if self:getPassiveItemHPCost(battler.chara) > 0 then
+                    battler:hurt(self.getPassiveItemHPCost(battler.chara), true)
+                end
+            end
+        end
+    end
 end
 
 return Item
