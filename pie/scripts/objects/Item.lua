@@ -81,7 +81,7 @@ end
 ---@param turn integer Current battle turn.
 function Item:passiveHurt(battler, turn)
     if self.passive_hurt and turn % self.passive_hurt_frequency == 0 then
-        battler:hurt(self.passive_hurt_amount)
+        battler:hurt(self.passive_hurt_amount, true)
     end
 end
 
