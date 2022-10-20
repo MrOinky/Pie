@@ -160,7 +160,7 @@ end
 function Item:passiveItem(battler, turn)
     if self:doesPassiveItem(battler.chara) and turn % self:getPassiveItemFrequency(battler.chara) == 0 then
         -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
-        local can_afford = (self:getPassiveItemTPCost(battler.chara) <= Game.tension and self:getPassiveItemHPCost(battler.chara) < battler.chara.health)
+        local can_afford = (self:getPassiveItemTensionCost(battler.chara) <= Game.tension and self:getPassiveItemHPCost(battler.chara) < battler.chara.health)
 
         -- If both checks pass then an attempt to add the item is made.
         if can_afford then

@@ -7,6 +7,10 @@ function Encounter:init()
     self.turn = 1
 end
 
+-- Encounter callbacks below are extended to call new item callbacks.
+-- The battler holding the item is passed into each, as well as any other
+-- relevant variables that can be made use of in the callback.
+
 function Encounter:onBattleInit()
     super:onBattleInit(self)
 
@@ -20,9 +24,7 @@ end
 function Encounter:onBattleStart()
     super:onBattleStart(self)
 
-    -- Looping through the party
     for _, battler in ipairs(Game.battle.party) do
-        -- Calls onBattleStart() for every equipped item.
         for _,item in ipairs(battler.chara:getEquipment()) do
             item:onBattleStart(battler)
         end
@@ -32,13 +34,11 @@ end
 function Encounter:onBattleEnd()
     super:onBattleStart(self)
 
-    -- Looping through the party
     for _, battler in ipairs(Game.battle.party) do
-        -- Calls onBattleEnd() for every equipped item.
         for _,item in ipairs(battler.chara:getEquipment()) do
             item:onBattleEnd(battler)
         end
-        -- Empties future_heals table.
+        -- Empties future_heals table ready for the next encounter.
         battler.future_heals = {}
     end
 end
@@ -47,7 +47,7 @@ function Encounter:onTurnStart()
     super:onTurnStart(self)
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onTurnStart(battler)
+            item:onTurnStart(battler, self.turn)
         end
     end
 end
@@ -56,9 +56,7 @@ function Encounter:onTurnEnd()
     super:onTurnEnd()
     local party = Game.battle.party
 
-    -- Looping through the party
     for _,battler in ipairs(party) do
-        -- Calls onTurnEnd() for every equipped item.
         for _,item in ipairs(battler.chara:getEquipment()) do
             item:onTurnEnd(battler, self.turn)
         end
