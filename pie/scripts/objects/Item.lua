@@ -26,22 +26,22 @@ function Item:init()
     self.passive_hurt_frequency = 1
 
     -- Does item have passive TP replenishment (equipment)
-    self.passive_tp = false
+    self.passive_tension = false
     -- HP cost of passive TP. (equipment)
-    self.passive_tp_amount = 0
+    self.passive_tension_amount = 0
     -- HP cost of passive heal. (equipment)
-    self.passive_tp_cost = 0
+    self.passive_tension_cost = 0
     -- Frequency, in turns, of TP restore. (equipment)
-    self.passive_tp_frequency = 1
+    self.passive_tension_frequency = 1
 
     -- Does item create items passively (equipment)
     self.passive_item = false
     -- Name of item to give. (equipment)
     self.passive_item_name = ""
     -- TP cost of giving item. (equipment)
-    self.passive_item_tpcost = 0
+    self.passive_item_tensioncost = 0
     -- HP cost of giving item. (equipment)
-    self.passive_item_hpcost = 0
+    self.passive_item_healthcost = 0
     -- Frequency of giving item. (equipment)
     self.passive_item_frequency = 1
 end
@@ -58,15 +58,15 @@ function Item:doesPassiveHurt(chara) return self.passive_hurt end
 function Item:getPassiveHurtAmount(chara) return self.passive_hurt_amount end
 function Item:getPassiveHurtFrequency(chara) return self.passive_hurt_frequency end
 
-function Item:doesPassiveTension(chara) return self.passive_tp end
-function Item:getPassiveTensionAmount(chara) return self.passive_tp_amount end
-function Item:getPassiveTensionCost(chara) return self.passive_tp_cost end
-function Item:getPassiveTensionFrequency(chara) return self.passive_tp_frequency end
+function Item:doesPassiveTension(chara) return self.passive_tension end
+function Item:getPassiveTensionAmount(chara) return self.passive_tension_amount end
+function Item:getPassiveTensionCost(chara) return self.passive_tension_cost end
+function Item:getPassiveTensionFrequency(chara) return self.passive_tension_frequency end
 
 function Item:doesPassiveItem(chara) return self.passive_item end
 function Item:getPassiveItemName(chara) return self.passive_item_name end
-function Item:getPassiveItemTensionCost(chara) return self.passive_item_tpcost end
-function Item:getPassiveItemHPCost(chara) return self.passive_item_hpcost end
+function Item:getPassiveItemTensionCost(chara) return self.passive_item_tensioncost end
+function Item:getPassiveItemHealthCost(chara) return self.passive_item_healthcost end
 function Item:getPassiveItemFrequency(chara) return self.passive_item_frequency end
 
 function Item:onBattleInit(battler) end
@@ -98,7 +98,7 @@ function Item:onTurnStart(battler, turn) end
 function Item:onTurnEnd(battler, turn)
     self:passiveHeal(battler, turn)
     self:passiveHurt(battler,turn)
-    self:passiveTPRestore(battler, turn)
+    self:passiveTensionRestore(battler, turn)
     self:passiveItem(battler, turn)
 end
 
@@ -137,7 +137,7 @@ end
 ---Controls passive TP replenishment behaviour for this item.
 ---@param battler any The battler that is holding this item.
 ---@param turn integer Current battle turn.
-function Item:passiveTPRestore(battler, turn)
+function Item:passiveTensionRestore(battler, turn)
     -- Standard checks and check to only activate if not at max TP.
     if self:doesPassiveTension(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and Game.tension < 100 then
         -- Since battler:hurt() deals a minimum of 1 damage, the HP cost must be checked to see if it is above 0.
@@ -160,7 +160,7 @@ end
 function Item:passiveItem(battler, turn)
     if self:doesPassiveItem(battler.chara) and turn % self:getPassiveItemFrequency(battler.chara) == 0 then
         -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
-        local can_afford = (self:getPassiveItemTensionCost(battler.chara) <= Game.tension and self:getPassiveItemHPCost(battler.chara) < battler.chara.health)
+        local can_afford = (self:getPassiveItemTensionCost(battler.chara) <= Game.tension and self:getPassiveItemHealthCost(battler.chara) < battler.chara.health)
 
         -- If both checks pass then an attempt to add the item is made.
         if can_afford then
@@ -170,8 +170,8 @@ function Item:passiveItem(battler, turn)
             if res_item ~= nil then
                 Game:removeTension(self:getPassiveItemTensionCost(battler.chara))
                 -- Once again, only call battler:hurt() if there is a HP cost.
-                if self:getPassiveItemHPCost(battler.chara) > 0 then
-                    battler:hurt(self.getPassiveItemHPCost(battler.chara), true)
+                if self:getPassiveItemHealthCost(battler.chara) > 0 then
+                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true)
                 end
             end
         end

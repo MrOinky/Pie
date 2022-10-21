@@ -52,11 +52,11 @@ function item:init()
         noelle = "It hurts... but feels good...",
     }
 
-    self.passive_tp = true
+    self.passive_tension = true
     
-    self.passive_tp_amount = 15
-    self.passive_tp_cost = 10
-    self.passive_tp_frequency = 1
+    self.passive_tension_amount = 15
+    self.passive_tension_cost = 10
+    self.passive_tension_frequency = 1
 end
 
 return item

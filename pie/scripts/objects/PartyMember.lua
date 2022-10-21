@@ -13,7 +13,7 @@ function PartyMember:getHealBonus()
     local amount = 0
 
     for _,item in ipairs(equipment) do
-        amount = amount + item.heal_bonus
+        amount = amount + item:getHealBonus()
     end
 
     return amount
