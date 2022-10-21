@@ -69,6 +69,9 @@ function Item:getPassiveItemTensionCost(chara) return self.passive_item_tensionc
 function Item:getPassiveItemHealthCost(chara) return self.passive_item_healthcost end
 function Item:getPassiveItemFrequency(chara) return self.passive_item_frequency end
 
+---Code that is run when the battle finishes initializing,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
 function Item:onBattleInit(battler) end
 
 ---Code that is run at the start of the battle,
@@ -88,6 +91,10 @@ function Item:onBattleEnd(battler)
     end
 end
 
+---Code that is run at the start of every turn,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param turn integer Current battle turn.
 function Item:onTurnStart(battler, turn) end
 
 ---Code that is run at the end of every turn,
@@ -102,12 +109,34 @@ function Item:onTurnEnd(battler, turn)
     self:passiveItem(battler, turn)
 end
 
+---Code that is run when the party begin to choose actions,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
 function Item:onActionsStart(battler) end
+
+---Code that is run when the party finishes choosing actions,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
 function Item:onActionsEnd(battler) end
 
+---Code that is run just before a state change in battle,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param old string The state the battle was previously in.
+---@param new string The state the battle is about to enter.
 function Item:beforeStateChange(battler, old, new) end
+
+---Code that is run as a state change occurs in battle,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param old string The state the battle was previously in.
+---@param new string The state the battle is about to enter.
 function Item:onStateChange(battler, old, new) end
 
+
+---Code that is run when all the party are downed in battle,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
 function Item:onGameOver(battler) end
 
 ---Controls passive healing behaviour for this item.
