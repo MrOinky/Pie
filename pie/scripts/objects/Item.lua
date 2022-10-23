@@ -133,11 +133,41 @@ function Item:beforeStateChange(battler, old, new) end
 ---@param new string The state the battle is about to enter.
 function Item:onStateChange(battler, old, new) end
 
-
 ---Code that is run when all the party are downed in battle,
 ---when this item is equipped.
 ---@param battler any The battler that is holding this item.
+function Item:beforeGameOver(battler) end
+
+---Code that is run just before being game-overed, after the
+---current battle wave has been stopped,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
 function Item:onGameOver(battler) end
+
+---Code that is run when this battler attacks an enemy,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param damage any The amount of damage dealt in the attack.
+function Item:onEnemyHit(battler, damage) end
+
+---Code that is run before this battler is hurt,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param damage any The amount of damage dealt in the attack.
+---@param defending any Whether the battler is defending.
+function Item:beforeHolderHurt(battler, damage, defending) end
+
+---Code that is run when this battler is hurt,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+---@param damage any The amount of damage dealt in the attack.
+---@param defending any Whether the battler is defending.
+function Item:onHolderHurt(battler, damage, defending) end
+
+---Code that is run when this battler is downed,
+---when this item is equipped.
+---@param battler any The battler that is holding this item.
+function Item:onHolderDowned(battler) end
 
 ---Controls passive healing behaviour for this item.
 ---@param battler any The battler that is holding this item.
@@ -159,7 +189,7 @@ end
 function Item:passiveHurt(battler, turn)
     -- Standard checks & check that battler is not downed.
     if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down then
-        battler:hurt(self:getPassiveHurtAmount(battler.chara), true)
+        battler:hurt(self:getPassiveHurtAmount(battler.chara), true, {1, 1, 1}, {passive_damage = true})
     end
 end
 
@@ -174,7 +204,7 @@ function Item:passiveTensionRestore(battler, turn)
             -- If there is enough HP to cover the cost, then TP is given and the battler is hurt.
             if self:getPassiveTensionCost(battler.chara) < battler.chara.health then
                 Game:giveTension(self:getPassiveTensionAmount(battler.chara))
-                battler:hurt(self:getPassiveTensionCost(battler.chara), true)
+                battler:hurt(self:getPassiveTensionCost(battler.chara), true, {1, 1, 1}, {passive_damage = true})
             end
         -- If there is no cost, tp is given directly, and battler:hurt() is not called.
         else
@@ -200,7 +230,7 @@ function Item:passiveItem(battler, turn)
                 Game:removeTension(self:getPassiveItemTensionCost(battler.chara))
                 -- Once again, only call battler:hurt() if there is a HP cost.
                 if self:getPassiveItemHealthCost(battler.chara) > 0 then
-                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true)
+                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true, {1, 1, 1}, {passive_damage = true})
                 end
             end
         end

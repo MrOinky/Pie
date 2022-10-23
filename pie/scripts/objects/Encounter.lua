@@ -115,4 +115,39 @@ function Encounter:onStateChange(old, new)
     end
 end
 
+function Encounter:beforeGameOver()
+    -- Represents whether an item has saved the party from losing.
+    local saved = false
+
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            -- If any item:beforeGameOver() returns true, gameover is stopped. 
+            if item:beforeGameOver(battler) then
+                saved = true
+            end
+        end
+    end
+    
+    -- Return saved value to gameover check.
+    return saved
+end
+
+function Encounter:onGameOver()
+    super:onGameOver(self)
+    -- Represents whether an item has saved the party from losing.
+    local saved = false
+
+    for _, battler in ipairs(Game.battle.party) do
+        for _, item in ipairs(battler.chara:getEquipment()) do
+            -- If any item:onGameOver() returns true, gameover is stopped. 
+            if item:onGameOver(battler) then
+                saved = true
+            end
+        end
+    end
+
+    -- Return saved value to gameover check.
+    return saved
+end
+
 return Encounter
