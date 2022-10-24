@@ -47,6 +47,14 @@ function PartyBattler:hurt(amount, exact, color, options)
 end
 
 function PartyBattler:down()
+    for _, item in ipairs(self.chara:getEquipment()) do
+        -- The party member will not be downed if beforeHolderDowned() returns true.
+        if item:beforeHolderDowned(self) then
+            return
+        end 
+    end
+    
+    -- The battler is actually downed here.
     super:down(self)
 
     -- A new callback that fires on items when their holder is down.

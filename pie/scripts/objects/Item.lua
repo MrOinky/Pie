@@ -135,12 +135,14 @@ function Item:onStateChange(battler, old, new) end
 
 ---Code that is run when all the party are downed in battle,
 ---when this item is equipped.
+---Returning true will stop the game over process.
 ---@param battler any The battler that is holding this item.
 function Item:beforeGameOver(battler) end
 
 ---Code that is run just before being game-overed, after the
 ---current battle wave has been stopped,
 ---when this item is equipped.
+---Returning true will stop the game over process.
 ---@param battler any The battler that is holding this item.
 function Item:onGameOver(battler) end
 
@@ -153,6 +155,7 @@ function Item:onEnemyHit(battler, enemy, damage) end
 
 ---Code that is run before this battler is hurt,
 ---when this item is equipped.
+---Returning true will stop the battler from being hurt.
 ---@param battler any The battler that is holding this item.
 ---@param damage any The amount of damage dealt in the attack.
 ---@param defending any Whether the battler is defending.
@@ -164,6 +167,12 @@ function Item:beforeHolderHurt(battler, damage, defending) end
 ---@param damage any The amount of damage dealt in the attack.
 ---@param defending any Whether the battler is defending.
 function Item:onHolderHurt(battler, damage, defending) end
+
+---Code that is run before this battler is hurt,
+---when this item is equipped.
+---Returning true will stop the holder from being downed.
+---@param battler any
+function Item:beforeHolderDowned(battler) end
 
 ---Code that is run when this battler is downed,
 ---when this item is equipped.
