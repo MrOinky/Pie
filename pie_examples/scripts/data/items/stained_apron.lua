@@ -1,4 +1,5 @@
 -- An adaptaion of Undertale's Stained Apron.
+-- Shows how you can use passive_heal variables to replicate its effect.
 
 local item, super = Class(Item)
 

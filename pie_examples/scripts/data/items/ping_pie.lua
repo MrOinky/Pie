@@ -1,3 +1,6 @@
+-- This pie is slightly laggy and so it'll heal you 2 turns after eating it.
+-- Shows how you can do a future heal in a HealItem.
+
 local item, super = Class(HealItem)
 
 function item:init()

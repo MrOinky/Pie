@@ -1,5 +1,5 @@
--- A sword called the "Baker's Blade". Increases healing and
--- generates pastries every other turn.
+-- This sword increases your healing power and gives you a pastry every other turn.
+-- Demonstrates how you could use the passive_item variables and heal_bonus.
 
 local item, super = Class(Item)
 

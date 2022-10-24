@@ -1,4 +1,6 @@
--- An example of the beforeGameOver() callback usage.
+-- It's a bomb! When equipped it'll explode in your face.
+-- Demonstrates how you can use callbacks - onActionsEnd() is
+-- used here, but it'd work for just about anything!
 
 local item, super = Class(Item)
 

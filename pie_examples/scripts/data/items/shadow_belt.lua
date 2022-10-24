@@ -1,4 +1,5 @@
--- An example of the beforeHolderHurt() callback usage.
+-- A mystical belt that can cloak the wearer in darkness to shield them from attacks.
+-- Shows how you could apply the beforeHolderhurt() callback to an item.
 
 local item, super = Class(Item)
 

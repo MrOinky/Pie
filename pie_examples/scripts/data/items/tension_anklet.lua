@@ -1,4 +1,5 @@
--- An adaptaion of Undertale's Stained Apron.
+-- An tension-generating anklet so tight that it hurts!
+-- Shows how you can use passive_tension variables to restore tension and remove health.
 
 local item, super = Class(Item)
 

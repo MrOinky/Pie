@@ -1,5 +1,5 @@
--- The Cactus Scarf.
--- It hurts!
+-- The Cactus Scarf. It hurts!
+-- Shows how you could use the passive_hurt variables in an item.
 
 local item, super = Class(Item)
 

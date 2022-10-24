@@ -1,3 +1,6 @@
+-- Its a pastry.
+-- Nothing special here, just designed to accompany the baker's blade.
+
 local item, super = Class(HealItem)
 
 function item:init()

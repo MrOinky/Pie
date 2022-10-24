@@ -1,4 +1,5 @@
 -- An adaptaion of Undertale's Burnt Pan.
+-- Shows how you would use heal_bonus to replicate the effect of the pan.
 
 local item, super = Class(Item)
 

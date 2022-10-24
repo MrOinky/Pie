@@ -1,3 +1,6 @@
+-- What? The ping pie isn't good enough for you? Fine, have this one instead.
+-- Shows how you can future heal the entire party with a HealItem.
+
 local item, super = Class(HealItem)
 
 function item:init()

@@ -1,4 +1,5 @@
--- An example of the onHolderHurt() callback usage.
+-- The brute shield. Menacing and spiky, it'll hurt enemies when you get hit if you're defending.
+-- Shows how you might use onHolderHurt() in an item.
 
 local item, super = Class(Item)
 
@@ -58,6 +59,7 @@ function item:init()
 end
 
 function item:onHolderHurt(battler, damage, defending)
+    -- Check whether the holder is defending.
     if defending then
         -- Choose a random target to hit.
         local target = Utils.pick(Game.battle.enemies)

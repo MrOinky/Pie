@@ -1,4 +1,5 @@
--- An example of the beforeGameOver() callback usage.
+-- A ring with a Phoenix on it. Has the power to revive the wearer when the party are in peril.
+-- Shows how you might use the beforeGameOver() callback.
 
 local item, super = Class(Item)
 

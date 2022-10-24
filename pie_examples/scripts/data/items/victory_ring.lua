@@ -1,4 +1,5 @@
--- An adaptaion of Undertale's Stained Apron.
+-- A golden ring that costs far too much to buy. Heals its bearer for 100 health at the end of battles.
+-- Shows how the victory_heal variable can be used to heal the wearer at the end of battle.
 
 local item, super = Class(Item)
 

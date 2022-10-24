@@ -1,5 +1,6 @@
--- An example of the onEnemyHit() callback usage.
--- Repeats attacks on enemies.
+-- A strange blade that bears similarity to the Echo Flowers.
+-- When an enemy is struck by this battler, an echo of the attack will follow.
+-- Demonstrates how you might use the onEnemyHit() callback.
 
 local item, super = Class(Item)
 
