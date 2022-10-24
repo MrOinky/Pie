@@ -18,8 +18,15 @@ function PartyBattler:hurt(amount, exact, color, options)
         end
     end
 
-    -- Don't callback if the damage was from a passive effect.
-    if not options["passive_damage"] then
+    -- Default to ignoring the callback if the damage is exact.
+    -- It can still be enabled if necessary but in most cases
+    -- this should be the ideal handling anyway.
+    if exact and options["ignore_callback"] == nil then
+        options["ignore_callback"] = true
+    end
+
+    -- Check whether damage has specified to ignore callback.
+    if not options["ignore_callback"] then
         for _, item in ipairs(self.chara:getEquipment()) do
             -- If beforeHolderHurt() returns true, then the battler is not hurt.
             if item:beforeHolderHurt(self, amount, self.defending) then
@@ -28,9 +35,11 @@ function PartyBattler:hurt(amount, exact, color, options)
         end
     end
 
+    -- The actual hurting of the battler happens here.
     super:hurt(self, _amount, exact, color, options)
 
-    if not options["passive_damage"] then
+    -- Once again, check whether to do the callback.
+    if not options["ignore_callback"] then
         for _, item in ipairs(self.chara:getEquipment()) do
             item:onHolderHurt(self, amount, self.defending)
         end
@@ -38,12 +47,12 @@ function PartyBattler:hurt(amount, exact, color, options)
 end
 
 function PartyBattler:down()
+    super:down(self)
+
     -- A new callback that fires on items when their holder is down.
     for _, item in ipairs(self.chara:getEquipment()) do
         item:onHolderDowned(self)
     end
-
-    super:down(self)
 end
 
 return PartyBattler

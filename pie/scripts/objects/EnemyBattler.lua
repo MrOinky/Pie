@@ -5,7 +5,7 @@ function EnemyBattler:onHurt(damage, battler)
 
     if battler then
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onEnemyHit(battler, damage)
+            item:onEnemyHit(battler, self, damage)
         end
     end
 end

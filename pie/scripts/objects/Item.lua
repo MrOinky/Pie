@@ -109,12 +109,12 @@ function Item:onTurnEnd(battler, turn)
     self:passiveItem(battler, turn)
 end
 
----Code that is run when the party begin to choose actions,
+---Code that is run when the party begin their actions,
 ---when this item is equipped.
 ---@param battler any The battler that is holding this item.
 function Item:onActionsStart(battler) end
 
----Code that is run when the party finishes choosing actions,
+---Code that is run when the party finish actions,
 ---when this item is equipped.
 ---@param battler any The battler that is holding this item.
 function Item:onActionsEnd(battler) end
@@ -147,8 +147,9 @@ function Item:onGameOver(battler) end
 ---Code that is run when this battler attacks an enemy,
 ---when this item is equipped.
 ---@param battler any The battler that is holding this item.
+---@param enemy any The enemy that has been hit.
 ---@param damage any The amount of damage dealt in the attack.
-function Item:onEnemyHit(battler, damage) end
+function Item:onEnemyHit(battler, enemy, damage) end
 
 ---Code that is run before this battler is hurt,
 ---when this item is equipped.
@@ -189,7 +190,7 @@ end
 function Item:passiveHurt(battler, turn)
     -- Standard checks & check that battler is not downed.
     if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down then
-        battler:hurt(self:getPassiveHurtAmount(battler.chara), true, {1, 1, 1}, {passive_damage = true})
+        battler:hurt(self:getPassiveHurtAmount(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
     end
 end
 
@@ -204,7 +205,7 @@ function Item:passiveTensionRestore(battler, turn)
             -- If there is enough HP to cover the cost, then TP is given and the battler is hurt.
             if self:getPassiveTensionCost(battler.chara) < battler.chara.health then
                 Game:giveTension(self:getPassiveTensionAmount(battler.chara))
-                battler:hurt(self:getPassiveTensionCost(battler.chara), true, {1, 1, 1}, {passive_damage = true})
+                battler:hurt(self:getPassiveTensionCost(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
             end
         -- If there is no cost, tp is given directly, and battler:hurt() is not called.
         else
@@ -230,7 +231,7 @@ function Item:passiveItem(battler, turn)
                 Game:removeTension(self:getPassiveItemTensionCost(battler.chara))
                 -- Once again, only call battler:hurt() if there is a HP cost.
                 if self:getPassiveItemHealthCost(battler.chara) > 0 then
-                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true, {1, 1, 1}, {passive_damage = true})
+                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
                 end
             end
         end
