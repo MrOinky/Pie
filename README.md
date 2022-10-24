@@ -16,6 +16,7 @@
  - Passive Item Effects for equipment such as auto-healing, damage over time and TP restoration. Perfect for mimicking functionality of the Stained Apron!
  - Healing boost effects for when items just aren't strong enough! Great at creating Burnt-pan style effects!
  - Healing from the past with new Future Heals for HealItems!
+ - End of battle heals with Victory Healing!
  Plus, a plethora of getter functions allow you to have maximum customization over these values that should cover all your creative needs!
  
  Of course, you can't use these functions without knowing how they work! The best way to find out how is to explore the documentation provided directly in the code and take a look at the examples provided inside `pie_examples`. Or if you prefer a proper documentation, a GitHub wiki page will be available soon!
