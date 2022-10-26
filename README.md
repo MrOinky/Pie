@@ -10,7 +10,7 @@
  
  If you're looking for a place to start with Pie, the source code also includes a handy set of examples in the `pie_examples` library. To see the examples in action, place the `pie_examples` into your `libraries` folder alongside `pie` and start experimenting!
 
-# Usage and Functionality
+# Usage and Features
  Pie comes with a handful of helpful additions to items from Kristal, including:
  - Lots of new callbacks, mostly inheriting from those found in the Encounter class, as well as a few custom ones.
  - Passive Item Effects for equipment such as auto-healing, damage over time and TP restoration. Perfect for mimicking functionality of the Stained Apron!
@@ -20,7 +20,7 @@
  
  Plus, a plethora of getter functions allow you to have maximum customization over these values that should cover all your creative needs!
  
- Of course, you can't use these functions without knowing how they work! The best way to find out how is to explore the documentation provided directly in the code and take a look at the examples provided inside `pie_examples`. Or if you prefer a proper documentation, a GitHub wiki page will be available soon!
+ Of course, you can't use these features without knowing how they work! The best way to find out how is to explore the documentation provided directly in the code and take a look at the examples provided inside `pie_examples`. Or if you prefer a proper documentation, I have a [GitHub wiki](https://github.com/MrOinky/Pie/wiki) available for Pie accessible by the link or from this repository.
  
 # Feedback
  If you have a suggestion for the library, or have ran into a bug, please make an issue for this repository so I can check it out! Or, even better, feel free to make a pull request implementing fixes or features yourself!
