@@ -44,6 +44,25 @@ function Item:init()
     self.passive_item_healthcost = 0
     -- Frequency of giving item. (equipment)
     self.passive_item_frequency = 1
+
+    -- The base chance of this item dodging. (equipment)
+    self.dodge_chance = 0
+    -- The bonus chance of this item dodging if the holder is defending. (equipment)
+    self.dodge_defend_bonus = 0
+
+    -- The base chance of this item activating thorns.
+    self.thorn_chance = 0
+    -- The bonus chance of this item activating thorns if this item is defending. (equipment)
+    self.thorn_defend_bonus = 0
+    -- Proportion of damage "thorned" onto attacker (equipment)
+    self.thorn_damage_proportion = 0
+
+    -- The base chance of this item deflecting damage to the attacker. (equipment)
+    self.reflect_chance = 0
+    -- The bonus chaance of this item deflecting damage if the holder is defending. (equipment)
+    self.reflect_defend_bonus = 0
+    -- Proportion of damage reflected onto attacker (equipment)
+    self.reflect_damage_proprotion = 0
 end
 
 function Item:getHealBonus(chara) return self.heal_bonus end
@@ -68,6 +87,62 @@ function Item:getPassiveItemName(chara) return self.passive_item_name end
 function Item:getPassiveItemTensionCost(chara) return self.passive_item_tensioncost end
 function Item:getPassiveItemHealthCost(chara) return self.passive_item_healthcost end
 function Item:getPassiveItemFrequency(chara) return self.passive_item_frequency end
+
+function Item:doesDodge(chara)
+    -- If the item has greater than 0 dodge chance, then it can dodge.
+    if self.dodge_chance > 0 or self.dodge_defend_bonus > 0 then
+        return true
+    end
+end
+
+function Item:getDodgeChance(chara, defending)
+    if defending then
+        return self.dodge_chance + self.dodge_defend_bonus
+    else
+        return self.dodge_chance
+    end
+end
+
+function Item:getBaseDodgeChance(chara) return self.dodge_chance end
+function Item:getDodgeDefendBonus(chara) return self.dodge_defend_bonus end
+
+function Item:doesThorns(chara)
+    -- If the item has greater than 0 thorn chance, then it can trigger thorns.
+    if self.thorn_chance > 0 or self.thorn_defend_bonus > 0 then
+        return true
+    end
+end
+
+function Item:getThornsChance(chara, defending)
+    if defending then
+        return self.thorn_chance + self.thorn_defend_bonus
+    else
+        return self.thorn_chance
+    end
+end
+
+function Item:getBaseThornChance(chara) return self.thorn_chance end
+function Item:getThornDefendBonus(chara) return self.thorn_defend_bonus end
+function Item:getThornDamageProportion(chara) return self.thorn_damage_proportion end
+
+function Item:doesReflect(chara)
+    -- If the item has greater than 0 reflect chance, then it can reflect.
+    if self.reflect_chance > 0 or self.reflect_defend_bonus > 0 then
+        return true
+    end
+end
+
+function Item:getReflectChance(chara, defending)
+    if defending then
+        return self.reflect_chance + self.reflect_defend_bonus
+    else
+        return self.reflect_chance
+    end
+end
+
+function Item:getBaseReflectChance(chara) return self.reflect_chance end
+function Item:getReflectDefendBonus(chara) return self.reflect_defend_bonus end
+function Item:getReflectDamageProportion(chara) return self.reflect_damage_proprotion end
 
 ---Code that is run when the battle finishes initializing,
 ---when this item is equipped.
@@ -159,7 +234,9 @@ function Item:onEnemyHit(battler, enemy, damage) end
 ---@param battler any The battler that is holding this item.
 ---@param damage any The amount of damage dealt in the attack.
 ---@param defending any Whether the battler is defending.
-function Item:beforeHolderHurt(battler, damage, defending) end
+function Item:beforeHolderHurt(battler, damage, defending) 
+
+end
 
 ---Code that is run when this battler is hurt,
 ---when this item is equipped.
