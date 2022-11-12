@@ -1,5 +1,5 @@
 -- A mystical belt that can cloak the wearer in darkness to shield them from attacks.
--- Shows how you could apply the beforeHolderhurt() callback to an item.
+-- Now shows how you can use dodge variables to make a dodge effect. (Used to be a custom callback)
 
 local item, super = Class(Item)
 
@@ -52,17 +52,14 @@ function item:init()
         ralsei = "I feel like a karate master!",
         noelle = "It looks... weird.",
     }
-end
 
-function item:beforeHolderHurt(battler, damage, defending)
-    -- 25% chance to activate
-    if love.math.random(1, 100) <= 25 then
-        -- Spawn a miss message and play sound to signify dodge.
-        battler:statusMessage("msg", "miss", {1, 0, 1})
-        Assets.playSound("ui_cancel")
-        -- return true to prevent damage being dealt.
-        return true
-    end
+    -- Dodge variables
+
+    -- 25% chance to dodge
+    self.dodge_chance = 0.25
+
+    -- Set a custom miss msg color.
+    self.dodge_color = {1, 0, 1}
 end
 
 return item

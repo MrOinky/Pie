@@ -49,13 +49,19 @@ function Item:init()
     self.dodge_chance = 0
     -- The bonus chance of this item dodging if the holder is defending. (equipment)
     self.dodge_defend_bonus = 0
+    -- The sound played on dodge. using nil will play the default, and using "none" will play nothing. (equipment)
+    self.dodge_sound = nil
+    -- A table of the colors used in the miss message. (equipment)
+    self.dodge_color = nil
 
     -- The base chance of this item activating thorns.
-    self.thorn_chance = 0
+    self.thorns_chance = 0
     -- The bonus chance of this item activating thorns if this item is defending. (equipment)
-    self.thorn_defend_bonus = 0
+    self.thorns_defend_bonus = 0
     -- Proportion of damage "thorned" onto attacker (equipment)
-    self.thorn_damage_proportion = 0
+    self.thorns_damage_proportion = 0
+    -- The sound played on thorns. using nil will play the default, and using "none" will play nothing. (equipment)
+    self.thorns_sound = nil
 
     -- The base chance of this item deflecting damage to the attacker. (equipment)
     self.reflect_chance = 0
@@ -63,6 +69,8 @@ function Item:init()
     self.reflect_defend_bonus = 0
     -- Proportion of damage reflected onto attacker (equipment)
     self.reflect_damage_proprotion = 0
+    -- The sound played on reflect. using nil will play the default, and using "none" will play nothing. (equipment)
+    self.reflect_sound = nil
 end
 
 function Item:getHealBonus(chara) return self.heal_bonus end
@@ -105,25 +113,28 @@ end
 
 function Item:getBaseDodgeChance(chara) return self.dodge_chance end
 function Item:getDodgeDefendBonus(chara) return self.dodge_defend_bonus end
+function Item:getDodgeSound(chara) return self.dodge_sound end
+function Item:getDodgeColor(chara) return self.dodge_color end
 
 function Item:doesThorns(chara)
     -- If the item has greater than 0 thorn chance, then it can trigger thorns.
-    if self.thorn_chance > 0 or self.thorn_defend_bonus > 0 then
+    if self.thorns_chance > 0 or self.thorns_defend_bonus > 0 then
         return true
     end
 end
 
 function Item:getThornsChance(chara, defending)
     if defending then
-        return self.thorn_chance + self.thorn_defend_bonus
+        return self.thorns_chance + self.thorns_defend_bonus
     else
-        return self.thorn_chance
+        return self.thorns_chance
     end
 end
 
-function Item:getBaseThornChance(chara) return self.thorn_chance end
-function Item:getThornDefendBonus(chara) return self.thorn_defend_bonus end
-function Item:getThornDamageProportion(chara) return self.thorn_damage_proportion end
+function Item:getBaseThornsChance(chara) return self.thorns_chance end
+function Item:getThornsDefendBonus(chara) return self.thorns_defend_bonus end
+function Item:getThornsDamageProportion(chara) return self.thorns_damage_proportion end
+function Item:getThornsSound(chara) return self.thorns_sound end
 
 function Item:doesReflect(chara)
     -- If the item has greater than 0 reflect chance, then it can reflect.
@@ -143,6 +154,7 @@ end
 function Item:getBaseReflectChance(chara) return self.reflect_chance end
 function Item:getReflectDefendBonus(chara) return self.reflect_defend_bonus end
 function Item:getReflectDamageProportion(chara) return self.reflect_damage_proprotion end
+function Item:getReflectSound(chara) return self.reflect_sound end
 
 ---Code that is run when the battle finishes initializing,
 ---when this item is equipped.
@@ -230,20 +242,64 @@ function Item:onEnemyHit(battler, enemy, damage) end
 
 ---Code that is run before this battler is hurt,
 ---when this item is equipped.
+---Responsible for triggering dodge and reflect effects.
 ---Returning true will stop the battler from being hurt.
 ---@param battler any The battler that is holding this item.
 ---@param damage any The amount of damage dealt in the attack.
 ---@param defending any Whether the battler is defending.
 function Item:beforeHolderHurt(battler, damage, defending) 
-
+    if self:doesDodge(battler.chara) then
+        -- Get the actual dodge chance
+        local chance = self:getDodgeChance(battler.chara, defending) * 100
+        -- Then pull a random number between 1 and 100 and compare it to chance
+        if love.math.random(1, 100) <= chance then
+            -- Trigger callback and return true to block damage
+            Item:onDodge(battler, defending)
+            return true
+        end
+    end
+    -- Something similar for reflects, but with a few changes.
+    if self:doesReflect(battler.chara) then
+        local chance = self:getReflectChance(battler.chara, defending) * 100
+        if love.math.random(1, 100) <= chance then
+            -- Calculate the amount of damage that is being reflected and being taken by the battler.
+            local ref_amount = math.floor(damage * self:getReflectDamageProportion(battler.chara))
+            local hurt_amount = damage - ref_amount
+            -- Hurt the battler for the damage minus reflected amount.
+            if hurt_amount > 0 then 
+                battler:hurt(hurt_amount, true)
+            end
+            -- Then reflect the rest to an enemy.
+            local enemy = Utils.pick(Game.battle.enemies)
+            enemy:hurt(ref_amount)
+            -- Trigger callback
+            Item:onReflect(battler, damage, ref_amount, enemy, defending)
+            -- Return true to block the original damage.
+            return true
+        end
+    end
 end
 
 ---Code that is run when this battler is hurt,
 ---when this item is equipped.
+-- Responsible for handling the thorns effect.
 ---@param battler any The battler that is holding this item.
 ---@param damage any The amount of damage dealt in the attack.
 ---@param defending any Whether the battler is defending.
-function Item:onHolderHurt(battler, damage, defending) end
+function Item:onHolderHurt(battler, damage, defending) 
+    -- Very similar to reflect.
+    if self:doesThorns(battler.chara) then
+        local chance = self:getThornsChance(battler.chara, defending) * 100
+        if love.math.random(1, 100) <= chance then
+            -- Calculate the amount of damage that is being thorned.
+            local amount = math.floor(damage * self:getThornsDamageProportion(battler.chara))
+            -- Then deal it to an enemy.
+            local enemy = Utils.pick(Game.battle.enemies)
+            enemy:hurt(amount)
+            Item:onThorns(battler, damage, amount, enemy, defennding)
+        end
+    end
+end
 
 ---Code that is run before this battler is hurt,
 ---when this item is equipped.
@@ -321,6 +377,58 @@ function Item:passiveItem(battler, turn)
                 end
             end
         end
+    end
+end
+
+-- Damage effect callbacks below.
+-- Extend these to add custom effects or messages when effects trigger!
+
+---Triggered upon dodging any attack.
+---Normally responsible for playing a sound and displaying a status message.
+---@param battler any The battler that is holding this item.
+---@param damage any The damage this battler would have taken.
+---@param defending any Whether the battler was defending or not.
+function Item:onDodge(battler, damage, defending)
+    -- Retrieve sound and color
+    local snd = self:getDodgeSound(battler.chara) or "mus_sfx_a_pullback"  -- This sound is asriel's sword pullback from UNDERTALE.
+    local color = self:getDodgeColor(battler.chara) or {1, 1, 1}
+
+    -- Make a "miss" status message and play sound cue.
+    battler:statusMessage("msg", "miss", color)
+    -- If the sound is none then don't play anything.
+    if snd ~= "none" then
+        Assets.playSound(snd)
+    end
+end
+
+---Triggered upon thorns activating from an attack.
+---Normally responsible for playing a sound if there is one.
+---@param battler any The battler that is holding this item.
+---@param damage any The damage that the battler has taken.
+---@param thorned any The damage thorned onto the enemy.
+---@param enemy any The enemy that has been struck.
+---@param defending any Whether the battler was defending or not.
+function Item:onThorns(battler, damage, thorned, enemy, defending)
+    local snd = self:getThornsSound(battler.chara) or "screenshake"
+
+    if snd ~= "none" then
+        Assets.playSound(snd)
+    end
+
+end
+
+---Triggered when damage is reflected by this item.
+---Normally responsible for playing a sound if there is one.
+---@param battler any The battler that is holding this item.
+---@param damage any The damage that the battler has taken.
+---@param thorned any The damage reflected onto the enemy.
+---@param enemy any The enemy that has been struck.
+---@param defending any Whether the battler was defending or not.
+function Item:onReflect(battler, damage, reflected, enemy, defending)
+    local snd = self:getReflectSound(battler.chara) or "bell_bounce_short"
+    
+    if snd ~= "none" then
+        Assets.playSound(snd)
     end
 end
 

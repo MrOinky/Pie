@@ -1,5 +1,5 @@
--- The brute shield. Menacing and spiky, it'll hurt enemies when you get hit if you're defending.
--- Shows how you might use onHolderHurt() in an item.
+-- A mirror. Can reflect anything, no matter how illogical.
+-- Shows how you can use reflect variables to create a reflecting item.
 
 local item, super = Class(Item)
 
@@ -7,7 +7,7 @@ function item:init()
     super:init(self)
 
     -- Display name
-    self.name = "BruteShield"
+    self.name = "Mirror"
 
     -- Item type (item, key, weapon, armor)
     self.type = "armor"
@@ -19,7 +19,7 @@ function item:init()
     -- Shop description
     self.shop = ""
     -- Menu description
-    self.description = "A menacing, brutish, and spiked pink shield. Hurts attackers when defending."
+    self.description = "Inside is a clear reflection of yourself. Might reflect attacks back at the enemy."
 
     -- Default shop price (sell price is halved)
     self.price = 100
@@ -37,33 +37,29 @@ function item:init()
 
     -- Equip bonuses (for weapons and armor)
     self.bonuses = {
-        defense = 3,
-        attack = 1,
+        defense = 1,
     }
     -- Bonus name and icon (displayed in equip menu)
-    self.bonus_name = "Thorns"
+    self.bonus_name = "Reflection"
     self.bonus_icon = "ui/menu/icon/up"
 
     -- Equippable characters (default true for armors, false for weapons)
-    self.can_equip = {
-        ralsei = false,
-        noelle = false,
-    }
+    self.can_equip = {}
 
     -- Character reactions (key = party member id)
     self.reactions = {
-        susie = "Cool!",
-        ralsei = "Um, it's a little too big...",
-        noelle = "Its too heavy!",
+        susie = "Looking good.",
+        ralsei = "Oh, its shiny!",
+        noelle = "(How is this useful???)",
     }
 
-    -- Thorns variables
+    -- Reflect variables
 
-    -- Thorns will always activate when defending
-    self.thorns_defend_bonus = 1
+    -- 50% chance to reflect
+    self.reflect_chance = 0.5
 
-    -- Hit for a third of damage taken
-    self.thorns_damage_proportion = 1/3
+    -- Reflects ALL damage.
+    self.reflect_damage_proprotion = 1;
 end
 
 return item
