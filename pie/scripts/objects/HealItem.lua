@@ -12,6 +12,9 @@ function HealItem:init()
     -- The amount of turns into the future where this
     -- item future heals the target.
     self.future_heal_turns = 0
+
+    -- If true, this item cannot be impacted by heal bonuses.
+    self.block_heal_bonus = false
 end
 
 function HealItem:getFutureHealAmount(chara) return self.future_heal_amount end

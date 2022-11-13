@@ -370,7 +370,7 @@ end
 ---@param turn integer Current battle turn.
 function Item:passiveHurt(battler, turn)
     -- Standard checks & check that battler is not downed.
-    if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down then
+    if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down and (Kristal.getLibConfig("passiveitemeffects", "passsiveHurtCanKill", true) or battler.chara.health > self:getPassiveHurtAmount(battler.chara)) then
         battler:hurt(self:getPassiveHurtAmount(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
     end
 end
@@ -384,7 +384,7 @@ function Item:passiveTensionRestore(battler, turn)
         -- Since battler:hurt() deals a minimum of 1 damage, the HP cost must be checked to see if it is above 0.
         if self:getPassiveTensionCost(battler.chara) > 0 then
             -- If there is enough HP to cover the cost, then TP is given and the battler is hurt.
-            if self:getPassiveTensionCost(battler.chara) < battler.chara.health then
+            if self:getPassiveTensionCost(battler.chara) < battler.chara.health or Kristal.getLibConfig("passiveitemeffects", "passiveEffectCostCanKill", true) then
                 Game:giveTension(self:getPassiveTensionAmount(battler.chara))
                 battler:hurt(self:getPassiveTensionCost(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
             end
@@ -401,7 +401,7 @@ end
 function Item:passiveItem(battler, turn)
     if self:doesPassiveItem(battler.chara) and turn % self:getPassiveItemFrequency(battler.chara) == 0 then
         -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
-        local can_afford = (self:getPassiveItemTensionCost(battler.chara) <= Game.tension and self:getPassiveItemHealthCost(battler.chara) < battler.chara.health)
+        local can_afford = (self:getPassiveItemTensionCost(battler.chara) <= Game.tension and (self:getPassiveItemHealthCost(battler.chara) < battler.chara.health or Kristal.getLibConfig("passiveitemeffects", "passiveEffectCostCanKill", true)))
 
         -- If both checks pass then an attempt to add the item is made.
         if can_afford then
@@ -441,7 +441,7 @@ function Item:onDodge(battler, damage, defending)
 end
 
 ---Triggered upon thorns activating from an attack.
----Normally responsible for playing a sound if there is one.
+---Normally responsible for playing a thorns sound.
 ---@param battler any The battler that is holding this item.
 ---@param damage any The damage that the battler has taken.
 ---@param thorned any The damage thorned onto the enemy.
@@ -457,10 +457,10 @@ function Item:onThorns(battler, damage, thorned, enemy, defending)
 end
 
 ---Triggered when damage is reflected by this item.
----Normally responsible for playing a sound if there is one.
+---Normally responsible for playing a reflect sound.
 ---@param battler any The battler that is holding this item.
 ---@param damage any The damage that the battler has taken.
----@param thorned any The damage reflected onto the enemy.
+---@param reflected any The damage reflected onto the enemy.
 ---@param enemy any The enemy that has been struck.
 ---@param defending any Whether the battler was defending or not.
 function Item:onReflect(battler, damage, reflected, enemy, defending)

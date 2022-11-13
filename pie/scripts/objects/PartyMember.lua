@@ -12,6 +12,11 @@ end
 ---@param amount integer The amount of base healing for the item.
 ---@param item any The item object in question - can be used to selectively apply bonuses.
 function PartyMember:applyHealBonus(amount, item)
+    -- Check to see whether this item allows heal bonuses, return original amount if it does not.
+    if item.block_heal_bonus then
+        return amount
+    end
+
     -- Doesn't apply bonuses if the original heal amount is 0, unless the config overrides this.
     if amount == 0 and not Kristal.getLibConfig("passiveitemeffects", "alwaysApplyHealBonus", true) then
         return 0
