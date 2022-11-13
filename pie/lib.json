@@ -5,5 +5,12 @@
     ],
 
     "version": "v1.1.0dev",
-    "engineVer": "v0.8.0dev"
+    "engineVer": "v0.8.0dev",
+
+    "config": {
+        "passiveitemeffects": {
+            "alwaysDoHealItemHealing": false,
+            "alwaysApplyHealBonus": false
+        }
+    } 
 }

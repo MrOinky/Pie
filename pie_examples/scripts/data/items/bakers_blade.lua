@@ -1,5 +1,5 @@
 -- This sword increases your healing power and gives you a pastry every other turn.
--- Demonstrates how you could use the passive_item variables and heal_bonus.
+-- Demonstrates how you could use the passive_item variables and item-specific heal bonuses.
 
 local item, super = Class(Item)
 
@@ -57,7 +57,9 @@ function item:init()
     }
 
     -- Healing boost
-    self.heal_bonus = 10
+    self.heal_bonuses = {
+        pastry = 20
+    }
 
     self.passive_item = true
 

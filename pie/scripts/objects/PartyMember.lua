@@ -7,16 +7,24 @@ function PartyMember:init()
     self.future_heals = {}
 end
 
---- Calculates bonus healing based on equipment.
-function PartyMember:getHealBonus()
-    local equipment = self:getEquipment()
-    local amount = 0
-
-    for _,item in ipairs(equipment) do
-        amount = amount + item:getHealBonus()
+---Applies all item healing bonuses to the starting amount.
+---An integer representing the heal value after applying bonuses is returned.
+---@param amount integer The amount of base healing for the item.
+---@param item any The item object in question - can be used to selectively apply bonuses.
+function PartyMember:applyHealBonus(amount, item)
+    -- Doesn't apply bonuses if the original heal amount is 0, unless the config overrides this.
+    if amount == 0 and not Kristal.getLibConfig("passiveitemeffects", "alwaysApplyHealBonus", true) then
+        return 0
     end
 
-    return amount
+    local equipment = self:getEquipment()
+    local final_amount = amount
+
+    for _,equipitem in ipairs(equipment) do
+        final_amount = equipitem:applyHealBonus(self, amount, final_amount, item)
+    end
+
+    return final_amount
 end
 
 ---Registers a future heal for this party member.

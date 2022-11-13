@@ -6,6 +6,16 @@ function Item:init()
     -- Amount of bonus healing when consuming items. (equipment)
     self.heal_bonus = 0
 
+    -- Mutliplicative factor of bonus healing when consuming items. (equipment)
+    -- Overrides heal_bonus if set.
+    self.multiplicative_heal_bonus = nil
+
+    -- Amount of bonus healing for specific consumable items. (equipment)
+    self.heal_bonuses = {}
+
+    -- Multiplication factor of bonus healing for specific consumable items. (equipment)
+    self.multiplicative_heal_bonuses = {}
+
     -- Amount of HP restored when the battle is won. (equipment)
     self.victory_heal = 0
 
@@ -52,7 +62,7 @@ function Item:init()
     -- The sound played on dodge. using nil will play the default, and using "none" will play nothing. (equipment)
     self.dodge_sound = nil
     -- A table of the colors used in the miss message. (equipment)
-    self.dodge_color = nil
+    self.dodge_color = {1, 1, 1}
 
     -- The base chance of this item activating thorns.
     self.thorns_chance = 0
@@ -73,7 +83,36 @@ function Item:init()
     self.reflect_sound = nil
 end
 
-function Item:getHealBonus(chara) return self.heal_bonus end
+function Item:getHealBonus(chara, item)
+    return self.heal_bonuses[item.id] or self.heal_bonus
+end
+
+function Item:getMultiplicativeHealBonus(chara, item)
+    return self.multiplicative_heal_bonuses[item.id] or self.multiplicative_heal_bonus
+end
+
+function Item:healBonusIsMultiplicative(chara, item)
+    if self:getMultiplicativeHealBonus(chara, item) then
+        return true
+    else
+        return false
+    end
+end
+
+---Applies this item's heal bonus effect.
+---@param chara any The character holding this item.
+---@param base_amount any The base amount of healing applied by the HealItem.
+---@param cur_amount any The current amount of healing the item is set to do, with any prior heal bonuses applied.
+---@param item any The HealItem being consumed.
+---@return integer
+function Item:applyHealBonus(chara, base_amount, cur_amount, item)
+    if self:healBonusIsMultiplicative(chara, item) then
+        return cur_amount * self:getMultiplicativeHealBonus(chara, item)
+    else
+        return cur_amount + self:getHealBonus(chara, item)
+    end
+end
+
 function Item:getVictoryHealAmount(chara) return self.victory_heal end
 
 function Item:doesPassiveHeal(chara) return self.passive_heal end
@@ -254,7 +293,7 @@ function Item:beforeHolderHurt(battler, damage, defending)
         -- Then pull a random number between 1 and 100 and compare it to chance
         if love.math.random(1, 100) <= chance then
             -- Trigger callback and return true to block damage
-            Item:onDodge(battler, defending)
+            self:onDodge(battler, defending)
             return true
         end
     end
@@ -273,7 +312,7 @@ function Item:beforeHolderHurt(battler, damage, defending)
             local enemy = Utils.pick(Game.battle.enemies)
             enemy:hurt(ref_amount)
             -- Trigger callback
-            Item:onReflect(battler, damage, ref_amount, enemy, defending)
+            self:onReflect(battler, damage, ref_amount, enemy, defending)
             -- Return true to block the original damage.
             return true
         end
@@ -296,7 +335,7 @@ function Item:onHolderHurt(battler, damage, defending)
             -- Then deal it to an enemy.
             local enemy = Utils.pick(Game.battle.enemies)
             enemy:hurt(amount)
-            Item:onThorns(battler, damage, amount, enemy, defennding)
+            self:onThorns(battler, damage, amount, enemy, defennding)
         end
     end
 end
@@ -391,7 +430,7 @@ end
 function Item:onDodge(battler, damage, defending)
     -- Retrieve sound and color
     local snd = self:getDodgeSound(battler.chara) or "mus_sfx_a_pullback"  -- This sound is asriel's sword pullback from UNDERTALE.
-    local color = self:getDodgeColor(battler.chara) or {1, 1, 1}
+    local color = self:getDodgeColor(battler.chara)
 
     -- Make a "miss" status message and play sound cue.
     battler:statusMessage("msg", "miss", color)
