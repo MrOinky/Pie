@@ -1,6 +1,11 @@
 # Pie
  Pie (Passive Item Effects) is a small library for the Deltarune fangame engine, Kristal. Pie extends the default functionality of items to give them more functionality and make it easier to add custom item effects.
  
+# Licensing
+ Pie is licensed under the permissive BSD 3-Clause license. You can check out this repository's copy of the license [here](https://github.com/MrOinky/Pie/blob/main/LICENSE.md) (or by opening up LICENSE.md)
+ 
+ (As of `v1.1.1`) A copy of the license is already included within the main `pie` library, don't worry about copying it over! 
+ 
 # Installation
  Using the Pie library in your mod is very easy! All you have to do is:
  - Go to the "Releases" section of this GitHub repository.
@@ -16,7 +21,7 @@
  - Passive Item Effects for equipment such as auto-healing, damage over time and TP restoration. Perfect for mimicking functionality of the Stained Apron!
  - Healing boost effects for when items just aren't strong enough! Great at creating Burnt-pan style effects!
  - Healing from the past with new Future Heals for HealItems!
- - End of battle heals with Victory Healing!
+ - Start and end of battle heals with Starting Tension and Victory Healing!
  
  Plus, a plethora of getter functions allow you to have maximum customization over these values that should cover all your creative needs!
  

@@ -19,6 +19,9 @@ function Item:init()
     -- Amount of HP restored when the battle is won. (equipment)
     self.victory_heal = 0
 
+    -- Amount of TP given at the start of battle. (equipment)
+    self.starting_tension = 0
+
     -- Does item have passive healing (equipment)
     self.passive_heal = false
     -- Passive healing amount (equipment)
@@ -115,6 +118,8 @@ end
 
 function Item:getVictoryHealAmount(chara) return self.victory_heal end
 
+function Item:getStartingTensionAmount(chara) return self.starting_tension end
+
 function Item:doesPassiveHeal(chara) return self.passive_heal end
 function Item:getPassiveHealAmount(chara) return self.passive_heal_amount end
 function Item:getPassiveHealCost(chara) return self.passive_heal_cost end
@@ -202,8 +207,14 @@ function Item:onBattleInit(battler) end
 
 ---Code that is run at the start of the battle,
 ---when this item is equipped.
+---By default, this adds any starting tension to the party
+---tension pool.
 ---@param battler any The battler that is holding this item.
-function Item:onBattleStart(battler) end
+function Item:onBattleStart(battler) 
+    local amount = self:getStartingTensionAmount(battler.chara)
+
+    Game:giveTension(amount)
+end
 
 ---Code that is run at the end of the battle,
 ---when this item is equipped.
