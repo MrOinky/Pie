@@ -2,10 +2,10 @@
  Pie (Passive Item Effects) is a small library for the Deltarune fangame engine, Kristal. Pie extends the default functionality of items to give them more functionality and make it easier to add custom item effects.
  
 # Licensing
- Pie is licensed under the permissive BSD 3-Clause license. You can check out this repository's copy of the license [here](https://github.com/MrOinky/Pie/blob/main/LICENSE.md) (or by opening up LICENSE.md)
+ Pie is licensed under the permissive BSD 3-Clause license. You can check out this repository's copy of this license (and its terms) [here](https://github.com/MrOinky/Pie/blob/main/LICENSE.md) (or by opening up LICENSE.md)
  
  (As of `v1.1.1`) A copy of the license is already included within the main `pie` library, don't worry about copying it over! 
- 
+
 # Installation
  Using the Pie library in your mod is very easy! All you have to do is:
  - Go to the "Releases" section of this GitHub repository.
