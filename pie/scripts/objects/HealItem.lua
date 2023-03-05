@@ -56,7 +56,7 @@ function HealItem:onBattleUse(user, target)
         local amount = self:getBattleHealAmount(target.chara.id)
         amount = user.chara:applyHealBonus(amount, self)
         -- Healing will not occur if the item has 0 healing, unless the config overrides it.
-        if amount == 0 or Kristal.getLibConfig("passiveitemeffects", "alwaysDoHealItemHealing", true) then
+        if amount == 0 or Kristal.getLibConfig("pie", "alwaysDoHealItemHealing", true) then
             target:heal(amount)
         end
         -- Apply future healing
@@ -71,7 +71,7 @@ function HealItem:onBattleUse(user, target)
         for _,battler in ipairs(target) do
             local amount = self:getBattleHealAmount(battler.chara.id)
             amount = user.chara:applyHealBonus(amount, self)
-            if amount > 0 or Kristal.getLibConfig("passiveitemeffects", "alwaysDoHealItemHealing", true) then
+            if amount > 0 or Kristal.getLibConfig("pie", "alwaysDoHealItemHealing", true) then
                 battler:heal(amount)
             end
             -- Apply future healing to everyone!

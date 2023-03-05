@@ -23,7 +23,7 @@ function PartyMember:applyHealBonus(amount, item)
     end
     
     -- Doesn't apply bonuses if the original heal amount is 0 or less, unless the config overrides this behaviour.
-    if amount <= 0 and not Kristal.getLibConfig("passiveitemeffects", "alwaysApplyHealBonus", true) then
+    if amount <= 0 and not Kristal.getLibConfig("pie", "alwaysApplyHealBonus", true) then
         return amount
     end
     
@@ -39,7 +39,7 @@ function PartyMember:applyHealBonus(amount, item)
     end
 
     -- Applies the heal bonus, based on the order set in the config.
-    if Kristal.getLibConfig("passiveitemeffects", "healMultiplierTakesPriority", true) then
+    if Kristal.getLibConfig("pie", "healMultiplierTakesPriority", true) then
         final_amount = (final_amount * multiplier) + bonus
     else
         final_amount = (final_amount + bonus) * multiplier
