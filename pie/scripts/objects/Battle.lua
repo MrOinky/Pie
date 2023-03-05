@@ -1,4 +1,8 @@
-local Battle, super = Class(Battle)
+---
+---@class Battle
+---
+---@overload fun(...) : Battle
+local Battle, super = Class("Battle")
 
 function Battle:checkGameOver()
     for _,battler in ipairs(self.party) do

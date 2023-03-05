@@ -1,4 +1,8 @@
-local EnemyBattler, super = Class(EnemyBattler)
+---
+---@class EnemyBattler
+---
+---@overload fun(...) : EnemyBattler
+local EnemyBattler, super = Class("EnemyBattler")
 
 function EnemyBattler:onHurt(damage, battler)
     super:onHurt(self, damage, battler)

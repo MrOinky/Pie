@@ -1,15 +1,16 @@
-local Encounter, super = Class(Encounter)
+---
+---@class Encounter
+---
+---@field turn number  The number of turns elapsed in this encounter. Starts at `1`, increasing at the end of each turn.
+---
+---@overload fun(...) : Encounter
+local Encounter, super = Class("Encounter")
 
 function Encounter:init()
     super:init(self)
     
-    -- Current battle turn.
     self.turn = 1
 end
-
--- Encounter callbacks below are extended to call new item callbacks.
--- The battler holding the item is passed into each, as well as any other
--- relevant variables that can be made use of in the callback.
 
 function Encounter:onBattleInit()
     super:onBattleInit(self)
@@ -66,7 +67,9 @@ function Encounter:onTurnEnd()
             fh = battler.chara.future_heals[i]
             fh.turns = fh.turns - 1
             if fh.turns == 0 then
-                battler:heal(fh.amount)
+                if not battler.chara:onFutureHeal(fh.amount, battler) then
+                    battler:heal(fh.amount)
+                end
             end
         end
     end

@@ -1,4 +1,8 @@
-local PartyBattler, super = Class(PartyBattler)
+---
+---@class PartyBattler
+---
+---@overload fun(...) : PartyBattler
+local PartyBattler, super = Class("PartyBattler")
 
 function PartyBattler:hurt(amount, exact, color, options)
     options = options or {}

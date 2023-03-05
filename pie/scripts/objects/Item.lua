@@ -1,226 +1,374 @@
-local Item, super = Class(Item)
+---
+---@class Item
+---
+---@field heal_bonus                   number      Bonus healing added when consuming a HealItem.
+---@field heal_mult                    number|nil  Healing multiplier when consuming a HealItem.
+---@field heal_bonuses                 table       Bonus healing added for specific HealItems.       
+---@field heal_mults                   table       Healing multiplier for specific HealItems.
+---
+---@field victory_heal                 number      Amount of health restored when winning a battle.
+---@field starting_tension             number      Amount of tension given at the start of battle.
+---
+--- Amount of health restored by passive healing. \
+--- Defaults to `nil`, where no passive healing will occur.
+---@field passive_heal_amount          number|nil
+---@field passive_heal_cost            number      Amount of tension required for passive healing. Defaults to `0`.
+---@field passive_heal_frequency       number      Number of turns between each passive heal. Defaults to `1`.
+---
+--- Amount of damage dealt to the player by this item. \
+--- Defaults to `nil`, where the item does not deal any damage.
+---@field passive_hurt_amount          number|nil
+---@field passive_hurt_frequency       number      Number of turns between each time damage is dealt. Defaults to `1`.
+---
+--- Amount of tension gained passively by this item. \
+--- Defaults to `nil`, where no tension is given.
+---@field passive_tension_amount       number|nil
+---@field passive_tension_cost         number      Amount of health taken when granting tension. Defaults to `0`.
+---@field passive_tension_frequency    number      Number of turns between tension being given. Defaults to `1`.
+---
+--- The ID of an item to be given to the party. \
+--- Defaults to `nil`, where no item is given.
+---@field passive_item_name            string|nil
+---@field passive_item_tensioncost     number      Amount of tension required to give the item. Defaults to `0`.
+---@field passive_item_healthcost      number      Amount of health taken when giving the item. Defaults to `0`.
+---@field passive_item_frequency       number      Number of turns between each instance of the item being spawned. Defaults to `1`.
+---
+--- The chance for this party member to dodge incoming damage. \
+--- Ranges from `0` (No chance) to `1` (100% chance), defaulting to `0`.
+---@field dodge_chance                 number
+---@field dodge_defend_bonus           number      When defending, this is added to `dodge_chance` to get the final dodge chance. Defaults to `0`.
+--- The sound file to play when this item's dodge effect is triggered. \
+--- Defaults to `nil`, which will play the sword pullback sound from Asriel in UNDERTALE. \
+--- When set to `"none"`, no sound will be played.
+---@field dodge_sound                  string|nil
+---@field dodge_text_color             table       An `{r, g, b}` table of the color to use for the MISS text when dodging. Defaults to white.
+---
+--- The chance for this party member to strike a random enemy when taking damage. \
+--- Ranges from `0` (No chance) to `1` (100% chance), defaulting to `0`.
+---@field thorns_chance                number
+---@field thorns_defend_bonus          number      When defending, this is added to `thorns_chance` to get the final chance for thorns to activate. Defaults to `0`.
+--- The amount of damage dealt to an enemy, as a proportion of damage taken. \
+--- Ranges from `0` (0% of damage) to `1` (100% of damage).
+---@field thorns_damage_proportion     number
+--- The sound file to play when this item's thorns effect is triggered. \
+--- Defaults to `nil`, which will play the `"screenshake"` sound. \
+--- When set to `"none"`, no sound will be played.
+---@field thorns_sound                 string|nil  
+---
+--- The chance for this party member to reflect incoming damage onto a random enemy. \
+--- Ranges from 0 (No chance) to 1 (100% chance), defaulting to 0.
+---@field reflect_chance               number
+---@field reflect_defend_bonus         number      When defending, this is added to `reflect_chance` to get the final chance to reflect damage. Defaults to `0`.
+--- The amount of damage reflected, as a proportion of damage taken. \
+--- Ranges from `0` (0% of damage) to `1` (100% of damage), defaulting to `0`.
+---@field reflect_damage_proportion    number
+--- The sound file to play when this item reflects damage. \
+--- Defaults to `nil`, which will play the `"bell_bounce_short"` sound. \
+--- When set to `"none"`, no sound will be played.
+---@field reflect_sound                string|nil
+---
+---@overload fun(...) : Item
+local Item, super = Class("Item")
 
 function Item:init()
     super:init(self)
 
-    -- Amount of bonus healing when consuming items. (equipment)
     self.heal_bonus = 0
-
-    -- Mutliplicative factor of bonus healing when consuming items. (equipment)
-    -- Overrides heal_bonus if set.
-    self.multiplicative_heal_bonus = nil
-
-    -- Amount of bonus healing for specific consumable items. (equipment)
+    self.heal_mult = 1
     self.heal_bonuses = {}
+    self.heal_mults = {}
 
-    -- Multiplication factor of bonus healing for specific consumable items. (equipment)
-    self.multiplicative_heal_bonuses = {}
-
-    -- Amount of HP restored when the battle is won. (equipment)
     self.victory_heal = 0
 
-    -- Amount of TP given at the start of battle. (equipment)
     self.starting_tension = 0
 
-    -- Does item have passive healing (equipment)
-    self.passive_heal = false
-    -- Passive healing amount (equipment)
-    self.passive_heal_amount = 0
-    -- TP cost of passive heal. (equipment)
+    self.passive_heal_amount = nil
     self.passive_heal_cost = 0
-    -- Frequency, in turns, of healing. (equipment)
     self.passive_heal_frequency = 1
 
-    -- Does item have passive hurt (equipment)
-    self.passive_hurt = false
-    -- Amount of damage item deals. (equipment)
-    self.passive_hurt_amount = 0
-    -- Frequency, in turns, of passive damage. (equipment)
+    self.passive_hurt_amount = nil
     self.passive_hurt_frequency = 1
 
-    -- Does item have passive TP replenishment (equipment)
-    self.passive_tension = false
-    -- HP cost of passive TP. (equipment)
-    self.passive_tension_amount = 0
-    -- HP cost of passive heal. (equipment)
+    self.passive_tension_amount = nil
     self.passive_tension_cost = 0
-    -- Frequency, in turns, of TP restore. (equipment)
     self.passive_tension_frequency = 1
 
-    -- Does item create items passively (equipment)
-    self.passive_item = false
-    -- Name of item to give. (equipment)
-    self.passive_item_name = ""
-    -- TP cost of giving item. (equipment)
+    self.passive_item_name = nil
     self.passive_item_tensioncost = 0
-    -- HP cost of giving item. (equipment)
     self.passive_item_healthcost = 0
-    -- Frequency of giving item. (equipment)
     self.passive_item_frequency = 1
 
-    -- The base chance of this item dodging. (equipment)
     self.dodge_chance = 0
-    -- The bonus chance of this item dodging if the holder is defending. (equipment)
     self.dodge_defend_bonus = 0
-    -- The sound played on dodge. using nil will play the default, and using "none" will play nothing. (equipment)
     self.dodge_sound = nil
-    -- A table of the colors used in the miss message. (equipment)
-    self.dodge_color = {1, 1, 1}
+    self.dodge_text_color = {1, 1, 1}
 
-    -- The base chance of this item activating thorns.
     self.thorns_chance = 0
-    -- The bonus chance of this item activating thorns if this item is defending. (equipment)
     self.thorns_defend_bonus = 0
-    -- Proportion of damage "thorned" onto attacker (equipment)
     self.thorns_damage_proportion = 0
-    -- The sound played on thorns. using nil will play the default, and using "none" will play nothing. (equipment)
     self.thorns_sound = nil
 
-    -- The base chance of this item deflecting damage to the attacker. (equipment)
     self.reflect_chance = 0
-    -- The bonus chaance of this item deflecting damage if the holder is defending. (equipment)
     self.reflect_defend_bonus = 0
-    -- Proportion of damage reflected onto attacker (equipment)
     self.reflect_damage_proprotion = 0
-    -- The sound played on reflect. using nil will play the default, and using "none" will play nothing. (equipment)
     self.reflect_sound = nil
 end
 
+--- Gets the bonus healing added when consuming a HealItem.
+---@param chara     PartyMember     The character consuming the item.
+---@param item      HealItem        The HealItem being consumed.
+---@return number
 function Item:getHealBonus(chara, item)
     return self.heal_bonuses[item.id] or self.heal_bonus
 end
 
-function Item:getMultiplicativeHealBonus(chara, item)
-    return self.multiplicative_heal_bonuses[item.id] or self.multiplicative_heal_bonus
+--- Gets the healing multiplier when consuming a HealItem.
+---@param chara     PartyMember     The character consuming the item.
+---@param item      HealItem        The HealItem being consumed.
+---@return number|nil
+function Item:getHealMultiplier(chara, item)
+    return self.heal_mults[item.id] or self.heal_mult
 end
 
-function Item:healBonusIsMultiplicative(chara, item)
-    if self:getMultiplicativeHealBonus(chara, item) then
-        return true
-    else
-        return false
-    end
-end
-
----Applies this item's heal bonus effect.
----@param chara any The character holding this item.
----@param base_amount any The base amount of healing applied by the HealItem.
----@param cur_amount any The current amount of healing the item is set to do, with any prior heal bonuses applied.
----@param item any The HealItem being consumed.
----@return integer
-function Item:applyHealBonus(chara, base_amount, cur_amount, item)
-    if self:healBonusIsMultiplicative(chara, item) then
-        return cur_amount * self:getMultiplicativeHealBonus(chara, item)
-    else
-        return cur_amount + self:getHealBonus(chara, item)
-    end
-end
-
+--- Gets the amount of health restored when winning a battle.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getVictoryHealAmount(chara) return self.victory_heal end
 
+--- Gets the amount of tension given at the start of battle.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getStartingTensionAmount(chara) return self.starting_tension end
 
-function Item:doesPassiveHeal(chara) return self.passive_heal end
+
+--- Checks whether this item is able to conduct passive healing. \
+--- By default, checks to see whether the value of health restored is not `nil`.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean
+function Item:doesPassiveHeal(chara) return self:getPassiveHealAmount(chara) ~= nil end
+
+--- Gets the amount of health restored by the passive healing effect.
+---@param chara     PartyMember     The character holding this item.
+---@return number|nil
 function Item:getPassiveHealAmount(chara) return self.passive_heal_amount end
+
+--- Gets the amount of tension consumed to restore health by passive healing.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveHealCost(chara) return self.passive_heal_cost end
+
+--- Gets the number of turns between each passive heal.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveHealFrequency(chara) return self.passive_heal_frequency end
 
-function Item:doesPassiveHurt(chara) return self.passive_hurt end
+--- Checks whether this item is able to deal passive damage. \
+--- By default, checks to see whether the value of damage dealt is not `nil`.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean
+function Item:doesPassiveHurt(chara) return self:getPassiveHurtAmount(chara) ~= nil end
+
+--- Gets the amount of damage this item deals as part of its passive hurt effect.
+---@param chara     PartyMember     The character holding this item.
+---@return number|nil
 function Item:getPassiveHurtAmount(chara) return self.passive_hurt_amount end
+
+--- Gets the number of turns between each time this item deals damage.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveHurtFrequency(chara) return self.passive_hurt_frequency end
 
-function Item:doesPassiveTension(chara) return self.passive_tension end
+
+--- Checks whether this item is able to grant passive tension. \
+--- By default, checks to see whether the value of tension given is not `nil`.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean
+function Item:doesPassiveTension(chara) return self:getPassiveTensionAmount(chara) ~= nil end
+
+--- Gets the amount of tension granted by the passive tension effect.
+---@param chara     PartyMember     The character holding this item.
+---@return number|nil
 function Item:getPassiveTensionAmount(chara) return self.passive_tension_amount end
+
+--- Gets the health deducted when granting tension.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveTensionCost(chara) return self.passive_tension_cost end
+
+--- Gets the number of turns between each time tension is given.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveTensionFrequency(chara) return self.passive_tension_frequency end
 
-function Item:doesPassiveItem(chara) return self.passive_item end
+
+--- Checks whether this item passively creates other items. \
+--- By default, checks to see whether an item to be given has been specified.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean
+function Item:doesPassiveItem(chara) return self:getPassiveItemName(chara) ~= nil end
+
+--- Gets the ID of the item that this item creates.
+---@param chara     PartyMember     The character holding this item.
+---@return string|nil
 function Item:getPassiveItemName(chara) return self.passive_item_name end
+
+--- Gets the tension consumed when creating an item by the passive item effect.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveItemTensionCost(chara) return self.passive_item_tensioncost end
+
+--- Gets the health consumed when creating an item by the passive item effect.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveItemHealthCost(chara) return self.passive_item_healthcost end
+
+--- Gets the number of turns between each time an item is created.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getPassiveItemFrequency(chara) return self.passive_item_frequency end
 
+--- Checks whether this item allows the holder to dodge attacks.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean|nil
 function Item:doesDodge(chara)
     -- If the item has greater than 0 dodge chance, then it can dodge.
-    if self.dodge_chance > 0 or self.dodge_defend_bonus > 0 then
+    if self:getDodgeChance(chara, true) > 0 then
         return true
     end
 end
 
+--- Gets the total chance of this item executing a successful dodge as a number from `0` to `1`.
+---@param chara     PartyMember     The character holding this item.
+---@param defending boolean         Whether the character is defending or not.
+---@return number
 function Item:getDodgeChance(chara, defending)
     if defending then
-        return self.dodge_chance + self.dodge_defend_bonus
+        return self:getBaseDodgeChance(chara) + self:getDodgeDefendBonus(chara)
     else
-        return self.dodge_chance
+        return self:getBaseDodgeChance(chara)
     end
 end
 
+--- Gets the base chance of this item executing a successful dodge.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getBaseDodgeChance(chara) return self.dodge_chance end
-function Item:getDodgeDefendBonus(chara) return self.dodge_defend_bonus end
-function Item:getDodgeSound(chara) return self.dodge_sound end
-function Item:getDodgeColor(chara) return self.dodge_color end
 
+--- Gets the bonus chance of this item executing a successful dodge when defending.
+---@param chara     PartyMember     The character holding this item.
+---@return number
+function Item:getDodgeDefendBonus(chara) return self.dodge_defend_bonus end
+
+--- Gets the name of the sound file to play when dodging an attack.
+---@param chara     PartyMember     The character holding this item.
+---@return string|nil
+function Item:getDodgeSound(chara) return self.dodge_sound end
+
+--- Gets the color to use for the default MISS text when dodging an attack as an `r`, `g`, `b` table.
+---@param chara     PartyMember     The character holding this item.
+---@return table
+function Item:getDodgeTextColor(chara) return self.dodge_text_color end
+
+--- Checks whether this item has a thorns effect.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean|nil
 function Item:doesThorns(chara)
     -- If the item has greater than 0 thorn chance, then it can trigger thorns.
-    if self.thorns_chance > 0 or self.thorns_defend_bonus > 0 then
+    if self:getThornsChance(chara, true) > 0 then
         return true
     end
 end
 
+--- Gets the total chance for this item's thorns effect to activate.
+---@param chara     PartyMember     The character holding this item.
+---@param defending boolean
+---@return number
 function Item:getThornsChance(chara, defending)
     if defending then
-        return self.thorns_chance + self.thorns_defend_bonus
+        return self:getBaseThornsChance(chara) + self:getThornsDefendBonus(chara)
     else
-        return self.thorns_chance
+        return self:getBaseThornsChance(chara)
     end
 end
 
+--- Gets the base chance for this item's thorns effect to activate.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getBaseThornsChance(chara) return self.thorns_chance end
+
+--- Gets the bonus chance for this item's thorns effect to activate when defending.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getThornsDefendBonus(chara) return self.thorns_defend_bonus end
+
+--- Gets the proportion of damage taken to return back to the attacker.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getThornsDamageProportion(chara) return self.thorns_damage_proportion end
+
+--- Gets the sound file to play when the thorns effect triggers.
+---@param chara     PartyMember     The character holding this item.
+---@return string|nil
 function Item:getThornsSound(chara) return self.thorns_sound end
 
+--- Checks whether this item is able to reflect incoming attacks.
+---@param chara     PartyMember     The character holding this item.
+---@return boolean|nil
 function Item:doesReflect(chara)
     -- If the item has greater than 0 reflect chance, then it can reflect.
-    if self.reflect_chance > 0 or self.reflect_defend_bonus > 0 then
+    if self:getReflectChance(chara, true) > 0 then
         return true
     end
 end
 
+--- Gets the total chance for this item's reflect effect to activate.
+---@param chara     PartyMember     The character holding this item.
+---@param defending boolean
+---@return number
 function Item:getReflectChance(chara, defending)
     if defending then
-        return self.reflect_chance + self.reflect_defend_bonus
+        return self:getBaseReflectChance(chara) + self:getReflectDefendBonus(chara)
     else
-        return self.reflect_chance
+        return self:getBaseReflectChance(chara)
     end
 end
 
+--- Gets the base chance for this item's reflect effect to activate.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getBaseReflectChance(chara) return self.reflect_chance end
+
+--- Gets the bonus chance for this item's reflect effect to activate when defending.
+---@param chara     PartyMember     The character holding this item.
+---@return number
 function Item:getReflectDefendBonus(chara) return self.reflect_defend_bonus end
+
+--- Gets the proportion of damage taken that is reflected onto an enemy.
+---@param chara     PartyMember     The character holding this item.
+---@return integer
 function Item:getReflectDamageProportion(chara) return self.reflect_damage_proprotion end
+
+--- Gets the sound file to play when a reflect is successfully executed.
+---@param chara     PartyMember     The character holding this item.
+---@return string|nil
 function Item:getReflectSound(chara) return self.reflect_sound end
 
----Code that is run when the battle finishes initializing,
----when this item is equipped.
----@param battler any The battler that is holding this item.
+--- A callback that is run when the battle has initialized.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onBattleInit(battler) end
 
----Code that is run at the start of the battle,
----when this item is equipped.
----By default, this adds any starting tension to the party
----tension pool.
----@param battler any The battler that is holding this item.
+--- A callback that runs at the start of every battle. \
+--- By default, this controls the starting tension effect, so `super:onBattleEnd()` should be called in overrides.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onBattleStart(battler) 
     local amount = self:getStartingTensionAmount(battler.chara)
 
     Game:giveTension(amount)
 end
 
----Code that is run at the end of the battle,
----when this item is equipped.
----By default, this triggers on-victory healing
----for items with that effect.
----@param battler any The battler that is holding this item.
+--- A callback that runs at the end of battle, during the transition to the overworld. \
+--- By default, this controls the victory healing effect, so `super:onBattleEnd()` should be called in overrides.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onBattleEnd(battler) 
     local amount = self:getVictoryHealAmount(battler.chara)
     if amount > 0 then
@@ -228,17 +376,15 @@ function Item:onBattleEnd(battler)
     end
 end
 
----Code that is run at the start of every turn,
----when this item is equipped.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- A callback that runs at the start of every turn.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer         The current turn of the battle.
 function Item:onTurnStart(battler, turn) end
 
----Code that is run at the end of every turn,
----when this item is equipped.
----By default, this calls all passive behaviours.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- A callback that runs at the end of every turn. \
+--- By default, this is responsible for calling the passive item effects, so `super:onTurnEnd()` must be called in overrides.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer         The current turn of the battle.
 function Item:onTurnEnd(battler, turn)
     self:passiveHeal(battler, turn)
     self:passiveHurt(battler,turn)
@@ -246,57 +392,50 @@ function Item:onTurnEnd(battler, turn)
     self:passiveItem(battler, turn)
 end
 
----Code that is run when the party begin their actions,
----when this item is equipped.
----@param battler any The battler that is holding this item.
+--- A callback that runs when the party begin to execute their actions.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onActionsStart(battler) end
 
----Code that is run when the party finish actions,
----when this item is equipped.
----@param battler any The battler that is holding this item.
+--- A callback that runs after every party member has finished their actions.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onActionsEnd(battler) end
 
----Code that is run just before a state change in battle,
----when this item is equipped.
----@param battler any The battler that is holding this item.
----@param old string The state the battle was previously in.
----@param new string The state the battle is about to enter.
+--- A callback that is run whenever a state change is about to occur in battle.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param old       string          The state the battle is currently in.
+---@param new       string          The state the battle is about to enter.
 function Item:beforeStateChange(battler, old, new) end
 
----Code that is run as a state change occurs in battle,
----when this item is equipped.
----@param battler any The battler that is holding this item.
----@param old string The state the battle was previously in.
----@param new string The state the battle is about to enter.
+--- A callback that is run whenever a state change occurs in battle.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param old       string          The state the battle was previously in.
+---@param new       string          The state the battle has entered.
 function Item:onStateChange(battler, old, new) end
 
----Code that is run when all the party are downed in battle,
----when this item is equipped.
----Returning true will stop the game over process.
----@param battler any The battler that is holding this item.
+--- A callback that is run whenever the entire party is downed in battle. \
+--- This callback runs before the wave is stopped. See `onGameOver()` for a callback where the wave has been stopped. \
+--- Returning `true` will stop the game over process.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:beforeGameOver(battler) end
 
----Code that is run just before being game-overed, after the
----current battle wave has been stopped,
----when this item is equipped.
----Returning true will stop the game over process.
----@param battler any The battler that is holding this item.
+--- A callback that is run whenever the entire party is downed in battle. \
+--- The wave is stopped just before this - see `beforeGameOver()` for a callback before the wave ends. \
+--- Returning `true` will cancel the game over process.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onGameOver(battler) end
 
----Code that is run when this battler attacks an enemy,
----when this item is equipped.
----@param battler any The battler that is holding this item.
----@param enemy any The enemy that has been hit.
----@param damage any The amount of damage dealt in the attack.
+--- A callback that is run whenever the wearer deals damage to an enemy.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param enemy     EnemyBattler    The enemy that has been hit.
+---@param damage    integer         The amount of damage dealt in the attack.
 function Item:onEnemyHit(battler, enemy, damage) end
 
----Code that is run before this battler is hurt,
----when this item is equipped.
----Responsible for triggering dodge and reflect effects.
----Returning true will stop the battler from being hurt.
----@param battler any The battler that is holding this item.
----@param damage any The amount of damage dealt in the attack.
----@param defending any Whether the battler is defending.
+--- A callback that is run just before the wearer takes damage. \
+--- Returning `true` will cancel the holder being hurt. \
+--- This callback handles the reflect effect, so `super:beforeHolderHurt()` should be called when overriding this function.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param damage    integer         The amount of damage dealt in the attack.
+---@param defending boolean         Whether the battler is defending.
 function Item:beforeHolderHurt(battler, damage, defending) 
     if self:doesDodge(battler.chara) then
         -- Get the actual dodge chance
@@ -330,12 +469,11 @@ function Item:beforeHolderHurt(battler, damage, defending)
     end
 end
 
----Code that is run when this battler is hurt,
----when this item is equipped.
--- Responsible for handling the thorns effect.
----@param battler any The battler that is holding this item.
----@param damage any The amount of damage dealt in the attack.
----@param defending any Whether the battler is defending.
+--- A callback that is run whenever the wearer is hurt. \
+--- This callback handles the thorns effect, so `super:onHolderHurt()` should be called when overriding this function.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param damage    integer         The amount of damage dealt in the attack.
+---@param defending boolean         Whether the battler is defending.
 function Item:onHolderHurt(battler, damage, defending) 
     -- Very similar to reflect.
     if self:doesThorns(battler.chara) then
@@ -351,20 +489,18 @@ function Item:onHolderHurt(battler, damage, defending)
     end
 end
 
----Code that is run before this battler is hurt,
----when this item is equipped.
----Returning true will stop the holder from being downed.
----@param battler any
+--- A callback that is run before the wearer is downed. \
+--- If this function returns `true`, then the wearer will not be downed.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:beforeHolderDowned(battler) end
 
----Code that is run when this battler is downed,
----when this item is equipped.
----@param battler any The battler that is holding this item.
+--- A callback that is run when the wearer is downed.
+---@param battler   PartyBattler    The battler that is holding this item.
 function Item:onHolderDowned(battler) end
 
----Controls passive healing behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- Controls the passive healing effect.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer         Current battle turn.
 function Item:passiveHeal(battler, turn)
     -- Standard checks & check to only activate if not at max HP.
     if self:doesPassiveHeal(battler.chara) and turn % self:getPassiveHealFrequency(battler.chara) == 0 and battler.chara.health < battler.chara:getStat("health") then
@@ -376,9 +512,9 @@ function Item:passiveHeal(battler, turn)
     end
 end
 
----Controls passive damage behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- Controls the passive damage/damage over time effect.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer         Current battle turn.
 function Item:passiveHurt(battler, turn)
     -- Standard checks & check that battler is not downed.
     if self:doesPassiveHurt(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and not battler.is_down and (Kristal.getLibConfig("passiveitemeffects", "passsiveHurtCanKill", true) or battler.chara.health > self:getPassiveHurtAmount(battler.chara)) then
@@ -386,9 +522,9 @@ function Item:passiveHurt(battler, turn)
     end
 end
 
----Controls passive TP replenishment behaviour for this item.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- Controls the passive Tension restoring effect.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer         Current battle turn.
 function Item:passiveTensionRestore(battler, turn)
     -- Standard checks and check to only activate if not at max TP.
     if self:doesPassiveTension(battler.chara) and turn % self:getPassiveHurtFrequency(battler.chara) == 0 and Game.tension < 100 then
@@ -406,9 +542,9 @@ function Item:passiveTensionRestore(battler, turn)
     end
 end
 
----Controls passive item-giving-granting-whatever you like to call it behaviour.
----@param battler any The battler that is holding this item.
----@param turn integer Current battle turn.
+--- Controls the passive item giving effect.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param turn      integer          Current battle turn.
 function Item:passiveItem(battler, turn)
     if self:doesPassiveItem(battler.chara) and turn % self:getPassiveItemFrequency(battler.chara) == 0 then
         -- When giving an item, it can cost BOTH hp and tp, so both must be checked.
@@ -433,15 +569,15 @@ end
 -- Damage effect callbacks below.
 -- Extend these to add custom effects or messages when effects trigger!
 
----Triggered upon dodging any attack.
----Normally responsible for playing a sound and displaying a status message.
----@param battler any The battler that is holding this item.
----@param damage any The damage this battler would have taken.
----@param defending any Whether the battler was defending or not.
+--- The callback that occurs whenever an attack is dodged by this item. \
+--- By default, plays a sound and creates a MISS battle text.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param damage    integer         The damage this battler would have taken.
+---@param defending boolean         Whether the battler was defending or not.
 function Item:onDodge(battler, damage, defending)
     -- Retrieve sound and color
     local snd = self:getDodgeSound(battler.chara) or "mus_sfx_a_pullback"  -- This sound is asriel's sword pullback from UNDERTALE.
-    local color = self:getDodgeColor(battler.chara)
+    local color = self:getDodgeTextColor(battler.chara)
 
     -- Make a "miss" status message and play sound cue.
     battler:statusMessage("msg", "miss", color)
@@ -451,13 +587,13 @@ function Item:onDodge(battler, damage, defending)
     end
 end
 
----Triggered upon thorns activating from an attack.
----Normally responsible for playing a thorns sound.
----@param battler any The battler that is holding this item.
----@param damage any The damage that the battler has taken.
----@param thorned any The damage thorned onto the enemy.
----@param enemy any The enemy that has been struck.
----@param defending any Whether the battler was defending or not.
+--- The callback that occurs whenever this item's thorns effect is triggered. \
+--- By default, plays a sound.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param damage    integer         The damage that the battler has taken.
+---@param thorned   integer         The damage thorned onto the enemy.
+---@param enemy     EnemyBattler    The enemy that has been struck.
+---@param defending boolean         Whether the battler was defending or not.
 function Item:onThorns(battler, damage, thorned, enemy, defending)
     local snd = self:getThornsSound(battler.chara) or "screenshake"
 
@@ -467,13 +603,13 @@ function Item:onThorns(battler, damage, thorned, enemy, defending)
 
 end
 
----Triggered when damage is reflected by this item.
----Normally responsible for playing a reflect sound.
----@param battler any The battler that is holding this item.
----@param damage any The damage that the battler has taken.
----@param reflected any The damage reflected onto the enemy.
----@param enemy any The enemy that has been struck.
----@param defending any Whether the battler was defending or not.
+--- The callback that occurs whenever this item reflects damage. \
+--- By default, plays a sound.
+---@param battler   PartyBattler    The battler that is holding this item.
+---@param damage    integer         The damage that the battler has taken.
+---@param reflected integer         The damage reflected onto the enemy.
+---@param enemy     EnemyBattler    The enemy that has been struck.
+---@param defending boolean         Whether the battler was defending or not.
 function Item:onReflect(battler, damage, reflected, enemy, defending)
     local snd = self:getReflectSound(battler.chara) or "bell_bounce_short"
     

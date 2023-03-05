@@ -1,43 +1,64 @@
-local PartyMember, super = Class(PartyMember)
+---
+---@class PartyMember
+---
+---@field future_heals table   A table that stores data on currently active future heals.
+---
+---@overload fun(...) : PartyMember
+local PartyMember, super = Class("PartyMember")
 
 function PartyMember:init()
     super:init(self)
 
-    -- Table of currently queued future heals.
     self.future_heals = {}
 end
 
----Applies all item healing bonuses to the starting amount.
----An integer representing the heal value after applying bonuses is returned.
+--- Called whenever a HealItem is used. \
+--- Calculates the amount of healing an item should apply based on the character's healing bonuses.
 ---@param amount integer The amount of base healing for the item.
----@param item any The item object in question - can be used to selectively apply bonuses.
+---@param item any The HealItem that is being used.
 function PartyMember:applyHealBonus(amount, item)
     -- Check to see whether this item allows heal bonuses, return original amount if it does not.
     if item.block_heal_bonus then
         return amount
     end
-
-    -- Doesn't apply bonuses if the original heal amount is 0, unless the config overrides this.
-    if amount == 0 and not Kristal.getLibConfig("passiveitemeffects", "alwaysApplyHealBonus", true) then
-        return 0
+    
+    -- Doesn't apply bonuses if the original heal amount is 0 or less, unless the config overrides this behaviour.
+    if amount <= 0 and not Kristal.getLibConfig("passiveitemeffects", "alwaysApplyHealBonus", true) then
+        return amount
     end
-
+    
     local equipment = self:getEquipment()
     local final_amount = amount
+    local multiplier = 1
+    local bonus = 0
 
+    -- Gathers all the heal bonuses from the character's equipment.
     for _,equipitem in ipairs(equipment) do
-        final_amount = equipitem:applyHealBonus(self, amount, final_amount, item)
+        multiplier = multiplier * equipitem:getHealMultiplier(self, item)
+        bonus = bonus + equipitem:getHealBonus(self, item)
     end
 
-    return final_amount
+    -- Applies the heal bonus, based on the order set in the config.
+    if Kristal.getLibConfig("passiveitemeffects", "healMultiplierTakesPriority", true) then
+        final_amount = (final_amount * multiplier) + bonus
+    else
+        final_amount = (final_amount + bonus) * multiplier
+    end
+
+    return math.floor(final_amount)
 end
 
----Registers a future heal for this party member.
----Only works in battles.
+--- Registers a future heal for this party member.
 ---@param amount integer Amount of HP to restore.
 ---@param turns integer Amount of turns this heal happens in.
-function PartyMember:futureHeal(amount, turns)
+function PartyMember:addFutureHeal(amount, turns)
     table.insert(self.future_heals, {amount = amount, turns = turns})
 end
+
+--- Callback for when a future heal activates. \
+--- If this function returns `true`, the future heal will be cancelled.
+---@param amount integer The amount of HP restored by this heal.
+---@param battler PartyBattler The PartyBattler associated with this character.
+function PartyMember:onFutureHeal(amount, battler) end
 
 return PartyMember

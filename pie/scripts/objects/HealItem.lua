@@ -1,23 +1,32 @@
--- Healitem extension - Minor change to application of healing; getHealBonus() must
--- be called to allow for items to boost healing effects, and future heals are added
--- if they exist for the item.
+--- Hello, I am a random code comment.
+--- Hope you're having a great day today!
 
-local HealItem, super = Class(HealItem)
+---@class HealItem
+---
+---@field future_heal_amount   number      The amount of health restored by this item after a given number of turns.
+---@field future_heal_turns    number      The number of turns before the future heal arrives.
+---@field block_heal_bonus     boolean     When `true`, this item's healing cannot be affected by heal bonuses.
+---
+---@overload fun(...) : HealItem
+local HealItem, super = Class("HealItem")
 
 function HealItem:init()
     super:init(self)
 
-    -- The amount of hp this item heals in the future.
     self.future_heal_amount = 0
-    -- The amount of turns into the future where this
-    -- item future heals the target.
     self.future_heal_turns = 0
 
-    -- If true, this item cannot be impacted by heal bonuses.
     self.block_heal_bonus = false
 end
 
+--- Gets the amount of future healing given by this item.
+---@param chara PartyMember The PartyMember consuming this HealItem. 
+---@return number
 function HealItem:getFutureHealAmount(chara) return self.future_heal_amount end
+
+--- Gets the number of turns before this item's future heal arrives.
+---@param chara PartyMember The PartyMember consuming this HealItem.
+---@return number
 function HealItem:getFutureHealTurns(chara) return self.future_heal_turns end
 
 function HealItem:onWorldUse(target)
@@ -46,15 +55,16 @@ function HealItem:onBattleUse(user, target)
         -- Heal single party member
         local amount = self:getBattleHealAmount(target.chara.id)
         amount = user.chara:applyHealBonus(amount, self)
-        -- Healing will no longer occur if the item has 0 healing, unless the config specifically states to.
-        if amount > 0 or Kristal.getLibConfig("passiveitemeffects", "alwaysDoHealItemHealing", true) then
+        -- Healing will not occur if the item has 0 healing, unless the config overrides it.
+        if amount == 0 or Kristal.getLibConfig("passiveitemeffects", "alwaysDoHealItemHealing", true) then
             target:heal(amount)
         end
         -- Apply future healing
         if self.future_heal_amount ~= 0 then
             local amount = self:getFutureHealAmount(target.chara)
             amount = user.chara:applyHealBonus(amount, self)
-            target.chara:futureHeal(amount, self:getFutureHealTurns(target.chara))
+            target.chara:addFutureHeal(amount, self:getFutureHealTurns(target.chara))
+            self:onFutureHealStart(user, target, amount)
         end
     elseif self.target == "party" then
         -- Heal all party members
@@ -68,7 +78,8 @@ function HealItem:onBattleUse(user, target)
             if self.future_heal_amount ~= 0 then
                 local amount = self.future_heal_amount
                 amount = user.chara:applyHealBonus(amount, self)
-                battler.chara:futureHeal(amount, self.future_heal_turns)
+                battler.chara:addFutureHeal(amount, self.future_heal_turns)
+                self:onFutureHealStart(user, battler, amount)
             end
         end
     elseif self.target == "enemy" then
@@ -87,5 +98,12 @@ function HealItem:onBattleUse(user, target)
         -- No target, do nothing
     end
 end
+
+--- A callback that triggers whenever a future heal is started. \
+--- A multi-target item will call this once per battler.
+---@param user PartyBattler     The PartyBattler instance that used this item.
+---@param target PartyBattler   The target of this HealItem.
+---@param amount integer        The amount of health that will be restored by this HealItem.
+function HealItem:onFutureHealStart(user, target, amount) end
 
 return HealItem
