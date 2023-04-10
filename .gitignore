@@ -41,3 +41,6 @@ luac.out
 
 # VSCode Settings
 .vscode
+
+# Local files (used for storing release extras e.g. examples)
+local
