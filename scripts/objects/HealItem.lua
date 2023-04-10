@@ -56,7 +56,7 @@ function HealItem:onBattleUse(user, target)
         local amount = self:getBattleHealAmount(target.chara.id)
         amount = user.chara:applyHealBonus(amount, self)
         -- Healing will not occur if the item has 0 healing, unless the config overrides it.
-        if amount == 0 or Kristal.getLibConfig("pie", "alwaysDoHealItemHealing", true) then
+        if amount > 0 or Kristal.getLibConfig("pie", "alwaysDoHealItemHealing", true) then
             target:heal(amount)
         end
         -- Apply future healing
