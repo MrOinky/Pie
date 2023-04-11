@@ -104,6 +104,10 @@ end
 ---@param user PartyBattler     The PartyBattler instance that used this item.
 ---@param target PartyBattler   The target of this HealItem.
 ---@param amount integer        The amount of health that will be restored by this HealItem.
-function HealItem:onFutureHealStart(user, target, amount) end
+function HealItem:onFutureHealStart(user, target, amount) 
+    -- Small visual and audio cue for a future heal being set.
+    Assets.stopAndPlaySound("spellcast")
+    target:sparkle(1, 1, 0)
+end
 
 return HealItem
