@@ -32,10 +32,14 @@ function PartyBattler:hurt(amount, exact, color, options)
     -- Check whether damage has specified to ignore callback.
     if not options["ignore_callback"] then
         for _, item in ipairs(self.chara:getEquipment()) do
+            if not item:includes(Item) then
+                goto continue
+            end
             -- If beforeHolderHurt() returns true, then the battler is not hurt.
             if item:beforeHolderHurt(self, amount, self.defending) then
                 return
             end
+            ::continue::
         end
     end
 
@@ -45,17 +49,23 @@ function PartyBattler:hurt(amount, exact, color, options)
     -- Once again, check whether to do the callback.
     if not options["ignore_callback"] then
         for _, item in ipairs(self.chara:getEquipment()) do
-            item:onHolderHurt(self, amount, self.defending)
+            if item:includes(Item) then
+                item:onHolderHurt(self, amount, self.defending)
+            end
         end
     end
 end
 
 function PartyBattler:down()
     for _, item in ipairs(self.chara:getEquipment()) do
+        if not item:includes(Item) then
+            goto continue
+        end
         -- The party member will not be downed if beforeHolderDowned() returns true.
         if item:beforeHolderDowned(self) then
             return
         end 
+        ::continue::
     end
     
     -- The battler is actually downed here.
@@ -63,7 +73,9 @@ function PartyBattler:down()
 
     -- A new callback that fires on items when their holder is down.
     for _, item in ipairs(self.chara:getEquipment()) do
-        item:onHolderDowned(self)
+        if item:includes(Item) then
+            item:onHolderDowned(self)
+        end
     end
 end
 

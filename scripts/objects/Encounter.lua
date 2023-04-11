@@ -17,7 +17,13 @@ function Encounter:onBattleInit()
 
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onBattleInit(battler)
+            -- This little check in every callback prevents any class that does not include Item from causing crashes by being equipped.
+            if item:includes(Item) then
+                item:onBattleInit(battler)
+            else
+                -- For the initial battle load only, print a warning to the console that this has been detected.
+                print("[WARNING] Non-item detected equipped on battler " .. battler.chara.id .. ".")
+            end
         end
     end
 end
@@ -27,7 +33,9 @@ function Encounter:onBattleStart()
 
     for _, battler in ipairs(Game.battle.party) do
         for _,item in ipairs(battler.chara:getEquipment()) do
-            item:onBattleStart(battler)
+            if item:includes(Item) then
+                item:onBattleStart(battler)
+            end
         end
     end
 end
@@ -37,7 +45,10 @@ function Encounter:onBattleEnd()
 
     for _, battler in ipairs(Game.battle.party) do
         for _,item in ipairs(battler.chara:getEquipment()) do
-            item:onBattleEnd(battler)
+            if item:includes(Item) then
+                item:onBattleEnd(battler)
+            end
+
         end
         -- Empties future_heals table ready for the next encounter.
         battler.future_heals = {}
@@ -48,7 +59,9 @@ function Encounter:onTurnStart()
     super:onTurnStart(self)
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onTurnStart(battler, self.turn)
+            if item:includes(Item) then
+                item:onTurnStart(battler, self.turn)
+            end
         end
     end
 end
@@ -59,12 +72,14 @@ function Encounter:onTurnEnd()
 
     for _,battler in ipairs(party) do
         for _,item in ipairs(battler.chara:getEquipment()) do
-            item:onTurnEnd(battler, self.turn)
+            if item:includes(Item) then
+                item:onTurnEnd(battler, self.turn)
+            end
         end
         -- Runs through all future heals and reduces turns remaining
         -- by one. The heal is triggered if it hits 0.
         for i=1,#battler.chara.future_heals do
-            fh = battler.chara.future_heals[i]
+            local fh = battler.chara.future_heals[i]
             fh.turns = fh.turns - 1
             if fh.turns == 0 then
                 if not battler.chara:onFutureHeal(fh.amount, battler) then
@@ -83,7 +98,9 @@ function Encounter:onActionsStart()
     
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onActionsStart(battler)
+            if item:includes(Item) then
+                item:onActionsStart(battler)
+            end
         end
     end
 end
@@ -93,7 +110,9 @@ function Encounter:onActionsEnd()
     
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onActionsEnd(battler)
+            if item:includes(Item) then
+                item:onActionsEnd(battler)
+            end
         end
     end
 end
@@ -103,7 +122,9 @@ function Encounter:beforeStateChange(old, new)
     
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:beforeStateChange(battler, old, new)
+            if item:includes(Item) then
+                item:beforeStateChange(battler, old, new)
+            end
         end
     end
 end
@@ -113,7 +134,9 @@ function Encounter:onStateChange(old, new)
     
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
-            item:onStateChange(battler, old, new)
+            if item:includes(Item) then
+                item:onStateChange(battler, old, new)
+            end
         end
     end
 end
@@ -124,10 +147,15 @@ function Encounter:beforeGameOver()
 
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
+            -- Alternative way of writing the check for value-returning callbacks.
+            if not item:includes(Item) then
+                goto continue
+            end
             -- If any item:beforeGameOver() returns true, gameover is stopped. 
             if item:beforeGameOver(battler) then
                 saved = true
             end
+            ::continue::
         end
     end
     
@@ -142,10 +170,14 @@ function Encounter:onGameOver()
 
     for _, battler in ipairs(Game.battle.party) do
         for _, item in ipairs(battler.chara:getEquipment()) do
+            if not item:includes(Item) then
+                goto continue
+            end
             -- If any item:onGameOver() returns true, gameover is stopped. 
             if item:onGameOver(battler) then
                 saved = true
             end
+            ::continue::
         end
     end
 

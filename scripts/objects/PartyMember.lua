@@ -34,8 +34,10 @@ function PartyMember:applyHealBonus(amount, item)
 
     -- Gathers all the heal bonuses from the character's equipment.
     for _,equipitem in ipairs(equipment) do
-        multiplier = multiplier * equipitem:getHealMultiplier(self, item)
-        bonus = bonus + equipitem:getHealBonus(self, item)
+        if equipitem:includes(Item) then
+            multiplier = multiplier * equipitem:getHealMultiplier(self, item)
+            bonus = bonus + equipitem:getHealBonus(self, item)
+        end
     end
 
     -- Applies the heal bonus, based on the order set in the config.

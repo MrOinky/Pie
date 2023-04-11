@@ -443,7 +443,7 @@ function Item:beforeHolderHurt(battler, damage, defending)
         -- Then pull a random number between 1 and 100 and compare it to chance
         if love.math.random(1, 100) <= chance then
             -- Trigger callback and return true to block damage
-            self:onDodge(battler, defending)
+            self:onDodge(battler, damage, defending)
             return true
         end
     end
@@ -459,7 +459,21 @@ function Item:beforeHolderHurt(battler, damage, defending)
                 battler:hurt(hurt_amount, true)
             end
             -- Then reflect the rest to an enemy.
-            local enemy = Utils.pick(Game.battle.enemies)
+            local enemies = {}
+            for _, e in ipairs(Game.battle.enemies) do
+                if e.health > 1 then
+                    table.insert(enemies, e)
+                end
+            end
+            -- Return early if no available enemies to reflect damage to.
+            if #enemies == 0 then
+                return
+            end
+            local enemy = Utils.pick(enemies)
+            -- Prevent the reflect from being lethal. (This damage simply disappears, rather than compromising the effect of the user's reflect.)
+            if enemy.health < ref_amount then
+                ref_amount = enemy.health - 1
+            end
             enemy:hurt(ref_amount)
             -- Trigger callback
             self:onReflect(battler, damage, ref_amount, enemy, defending)
@@ -481,10 +495,24 @@ function Item:onHolderHurt(battler, damage, defending)
         if love.math.random(1, 100) <= chance then
             -- Calculate the amount of damage that is being thorned.
             local amount = math.floor(damage * self:getThornsDamageProportion(battler.chara))
-            -- Then deal it to an enemy.
-            local enemy = Utils.pick(Game.battle.enemies)
+            -- Then deal it to any eligible enemy (any enemy with more than 1 hp.)
+            local enemies = {}
+            for _, e in ipairs(Game.battle.enemies) do
+                if e.health > 1 then
+                    table.insert(enemies, e)
+                end
+            end
+            -- Return early if no available enemies to hit with thorns.
+            if #enemies == 0 then
+                return
+            end
+            local enemy = Utils.pick(enemies)
+            -- Prevent thorns from being lethal.
+            if enemy.health < amount then
+                amount = enemy.health - 1
+            end
             enemy:hurt(amount)
-            self:onThorns(battler, damage, amount, enemy, defennding)
+            self:onThorns(battler, damage, amount, enemy, defending)
         end
     end
 end
@@ -559,7 +587,7 @@ function Item:passiveItem(battler, turn)
                 Game:removeTension(self:getPassiveItemTensionCost(battler.chara))
                 -- Once again, only call battler:hurt() if there is a HP cost.
                 if self:getPassiveItemHealthCost(battler.chara) > 0 then
-                    battler:hurt(self.getPassiveItemHealthCost(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
+                    battler:hurt(self:getPassiveItemHealthCost(battler.chara), true, {1, 1, 1}, {ignore_callback = true})
                 end
             end
         end
