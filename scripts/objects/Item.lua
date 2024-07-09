@@ -71,7 +71,7 @@
 local Item, super = Class("Item")
 
 function Item:init()
-    super:init(self)
+    super.init(self)
 
     self.heal_bonus = 0
     self.heal_mult = 1

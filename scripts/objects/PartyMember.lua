@@ -7,7 +7,7 @@
 local PartyMember, super = Class("PartyMember")
 
 function PartyMember:init()
-    super:init(self)
+    super.init(self)
 
     self.future_heals = {}
 end

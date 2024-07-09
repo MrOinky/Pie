@@ -11,7 +11,7 @@
 local HealItem, super = Class("HealItem")
 
 function HealItem:init()
-    super:init(self)
+    super.init(self)
 
     self.future_heal_amount = 0
     self.future_heal_turns = 0
@@ -60,7 +60,7 @@ function HealItem:onBattleUse(user, target)
             target:heal(amount)
         end
         -- Apply future healing
-        if self.future_heal_amount ~= 0 then
+        if self:getFutureHealAmount(target.chara) ~= 0 then
             local amount = self:getFutureHealAmount(target.chara)
             amount = user.chara:applyHealBonus(amount, self)
             target.chara:addFutureHeal(amount, self:getFutureHealTurns(target.chara))
@@ -75,8 +75,8 @@ function HealItem:onBattleUse(user, target)
                 battler:heal(amount)
             end
             -- Apply future healing to everyone!
-            if self.future_heal_amount ~= 0 then
-                local amount = self.future_heal_amount
+        if self:getFutureHealAmount(battler.chara) ~= 0 then
+            local amount = self:getFutureHealAmount(battler.chara)
                 amount = user.chara:applyHealBonus(amount, self)
                 battler.chara:addFutureHeal(amount, self.future_heal_turns)
                 self:onFutureHealStart(user, battler, amount)

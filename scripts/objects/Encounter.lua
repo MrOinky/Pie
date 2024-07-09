@@ -7,7 +7,7 @@
 local Encounter, super = Class("Encounter")
 
 function Encounter:init()
-    super:init(self)
+    super.init(self)
     
     self.turn = 1
 end
