@@ -4,8 +4,8 @@
         "Mr_Oinky"
     ],
 
-    "version": "v1.2.1",
-    "engineVer": "v0.8.0",
+    "version": "v1.2.2",
+    "engineVer": "v0.10.0-dev",
 
     "config": {
         "pie": {
